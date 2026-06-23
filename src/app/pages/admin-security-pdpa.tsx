@@ -45,9 +45,14 @@ const ROLE_ROWS = [
     sensitive: "Business contact and certificate documents only",
   },
   {
-    role: "Data Reviewer",
+    role: "Content Admin (Creator)",
     scope: "Manage content, article workflow, content moderation, and public communication.",
     sensitive: "No certificate document access",
+  },
+  {
+    role: "Data Reviewer",
+    scope: "Check data completeness, imported records, warning flags, and missing fields before approval.",
+    sensitive: "No final approval, publishing, user, API key, or content ownership access",
   },
 ];
 
@@ -75,7 +80,7 @@ const SECURITY_EVENTS = [
   { id: "SEC-001", time: "2026-06-23 09:10", actor: "Super Admin", action: "Export approved", target: "All approved places", result: "Success" },
   { id: "SEC-002", time: "2026-06-23 08:42", actor: "Approver", action: "Viewed certificate document", target: "Yana Halal Restaurant", result: "Success" },
   { id: "SEC-003", time: "2026-06-22 17:20", actor: "System", action: "Backup completed", target: "Document vault snapshot", result: "Success" },
-  { id: "SEC-004", time: "2026-06-22 15:05", actor: "Data Reviewer", action: "Denied certificate access", target: "Phuket Beach Resort", result: "Blocked" },
+  { id: "SEC-004", time: "2026-06-22 15:05", actor: "Data Reviewer", action: "Denied final approval attempt", target: "Phuket Beach Resort", result: "Blocked" },
 ];
 
 const PDPA_REQUESTS = [

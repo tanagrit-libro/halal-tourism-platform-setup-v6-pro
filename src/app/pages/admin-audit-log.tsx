@@ -56,7 +56,7 @@ const AUDIT_EVENTS: AuditEvent[] = [
   { id: 'EVT-008', timestamp: '2026-06-15 10:44:12', actor: 'ahmad@halaltourism.com',   role: 'Approver', action: 'Request Docs',       entity: 'Chiang Mai Central Mosque', entityType: 'Place',        detail: 'Requested renewed halal certificate from business.',       ip: '192.168.1.10',   session: 'sess_bbb222', status: 'Success' },
   { id: 'EVT-009', timestamp: '2026-06-14 16:55:00', actor: 'reza@halaltourism.com',    role: 'Super Admin', action: 'Revoke',             entity: 'Old CRM Integration',    entityType: 'API Key',         detail: 'API key revoked. Reason: Integration decommissioned.',     ip: '10.0.0.5',       session: 'sess_eee555', status: 'Success' },
   { id: 'EVT-010', timestamp: '2026-06-14 14:30:55', actor: 'system',                   role: 'System',      action: 'Import',             entity: 'CICOT Certificate API',  entityType: 'Data Import',     detail: '28 records imported. 0 errors.',                           ip: 'system',         session: 'auto',        status: 'Success' },
-  { id: 'EVT-011', timestamp: '2026-06-14 09:00:00', actor: 'nurul@halaltourism.com',   role: 'Data Reviewer', action: 'Edit',             entity: 'Halal Tourism Article', entityType: 'Content',          detail: 'Updated body text and hero image for featured article.',   ip: '192.168.1.12',   session: 'sess_fff666', status: 'Success' },
+  { id: 'EVT-011', timestamp: '2026-06-14 09:00:00', actor: 'nurul@halaltourism.com',   role: 'Content Admin (Creator)', action: 'Edit',    entity: 'Halal Tourism Article', entityType: 'Content',          detail: 'Updated body text and hero image for featured article.',   ip: '192.168.1.12',   session: 'sess_fff666', status: 'Success' },
   { id: 'EVT-012', timestamp: '2026-06-13 15:20:10', actor: 'ahmad@halaltourism.com',   role: 'Approver', action: 'Unpublish',          entity: 'Halal Cafe & Bistro',    entityType: 'Place',           detail: 'Unpublished: pending certificate renewal. Admin comment added.', ip: '192.168.1.10', session: 'sess_bbb222', status: 'Success' },
   { id: 'EVT-013', timestamp: '2026-06-13 11:45:00', actor: 'system',                   role: 'System',      action: 'Auto-hide Expired',  entity: 'Halal Seafood Paradise', entityType: 'Place',           detail: 'Certificate expiry warning emailed to business 30 days prior.', ip: 'system',        session: 'auto',        status: 'Warning' },
   { id: 'EVT-014', timestamp: '2026-06-12 10:00:00', actor: 'reza@halaltourism.com',    role: 'Super Admin', action: 'Publish',            entity: 'Grand Halal Restaurant', entityType: 'Place',           detail: 'Restored to published after cert re-upload verified.',     ip: '10.0.0.5',       session: 'sess_ggg777', status: 'Success' },
@@ -104,7 +104,7 @@ const ALL_ACTIONS: EventType[] = SHOW_SECURITY_PDPA_INDICATORS
   ? [...BASE_ACTIONS, ...SECURITY_PDPA_ACTIONS]
   : BASE_ACTIONS;
 
-const ROLES = ['Super Admin', 'Approver', 'Data Reviewer', 'Business', 'System'];
+const ROLES = ['Super Admin', 'Approver', 'Content Admin (Creator)', 'Data Reviewer', 'Business', 'System'];
 const BASE_ENTITY_TYPES = ['Place', 'API Key', 'Data Import', 'Data Export', 'Auth', 'Content', 'Business Account'];
 const ENTITY_TYPES = SHOW_SECURITY_PDPA_INDICATORS
   ? [...BASE_ENTITY_TYPES, 'Security / PDPA']

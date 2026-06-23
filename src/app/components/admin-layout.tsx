@@ -32,19 +32,21 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-export type AdminRole = 'Super Admin' | 'Approver' | 'Data Reviewer';
+export type AdminRole = 'Super Admin' | 'Approver' | 'Content Admin (Creator)' | 'Data Reviewer';
 export const ADMIN_ROLE_STORAGE_KEY = 'gosafar-admin-demo-role';
 
 const ROLE_CONFIG: Record<AdminRole, { color: string; badge: string }> = {
-  'Super Admin':    { color: 'bg-purple-600',  badge: 'bg-purple-100 text-purple-800 border-purple-300' },
-  'Approver':  { color: 'bg-blue-600',    badge: 'bg-blue-100 text-blue-800 border-blue-300' },
-  'Data Reviewer': { color: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  'Super Admin':             { color: 'bg-purple-600',  badge: 'bg-purple-100 text-purple-800 border-purple-300' },
+  'Approver':                { color: 'bg-blue-600',    badge: 'bg-blue-100 text-blue-800 border-blue-300' },
+  'Content Admin (Creator)': { color: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  'Data Reviewer':           { color: 'bg-amber-600',   badge: 'bg-amber-100 text-amber-800 border-amber-300' },
 };
 
 export const ROLE_PERMISSIONS: Record<AdminRole, Record<string, boolean>> = {
-  'Super Admin':     { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: true,  manageApiKeys: true,  manageUsers: true,  exportData: true  },
-  'Approver':   { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: false, manageApiKeys: false, manageUsers: false, exportData: true  },
-  'Data Reviewer': { reviewData: true,  approveReject: false, publishUnpublish: true,  manageContent: true,  manageApiKeys: false, manageUsers: false, exportData: false },
+  'Super Admin':             { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: true,  manageApiKeys: true,  manageUsers: true,  exportData: true  },
+  'Approver':                { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: false, manageApiKeys: false, manageUsers: false, exportData: true  },
+  'Content Admin (Creator)': { reviewData: false, approveReject: false, publishUnpublish: false, manageContent: true,  manageApiKeys: false, manageUsers: false, exportData: false },
+  'Data Reviewer':           { reviewData: true,  approveReject: false, publishUnpublish: false, manageContent: false, manageApiKeys: false, manageUsers: false, exportData: false },
 };
 
 export const ADMIN_ROLES = Object.keys(ROLE_CONFIG) as AdminRole[];
@@ -150,7 +152,7 @@ export function AdminLayout({
                     <ChevronDown className="size-3 opacity-60" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuContent align="end" className="w-64">
                   <DropdownMenuLabel className="text-xs text-muted-foreground">Switch demo role</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {ADMIN_ROLES.map(r => (
@@ -164,7 +166,7 @@ export function AdminLayout({
                     {Object.entries({
                       'Review data': perms.reviewData,
                       'Approve/reject': perms.approveReject,
-                      'Publish': perms.publishUnpublish,
+                      'Publish/unpublish places': perms.publishUnpublish,
                       'Manage content': perms.manageContent,
                       'Manage API keys': perms.manageApiKeys,
                       'Manage users': perms.manageUsers,

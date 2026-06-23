@@ -37,7 +37,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Super Admin' | 'Approver' | 'Data Reviewer' | 'Entrepreneur' | 'Tourist';
+  role: 'Super Admin' | 'Approver' | 'Content Admin (Creator)' | 'Data Reviewer' | 'Entrepreneur' | 'Tourist';
   status: 'Active' | 'Pending' | 'Suspended';
   department?: string;
   // Req 3.3: Specific fields for grouping Entrepreneurs
@@ -136,9 +136,19 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
       id: '8',
       name: 'Nurul Iman',
       email: 'nurul@gosafar.th',
+      role: 'Content Admin (Creator)',
+      status: 'Active',
+      department: 'Content Team',
+      joinDate: '2025-08-01',
+      lastActive: '28 mins ago',
+    },
+    {
+      id: '9',
+      name: 'Siti Rahimah',
+      email: 'reviewer@gosafar.th',
       role: 'Data Reviewer',
       status: 'Active',
-      department: 'Data Review',
+      department: 'Data QA',
       joinDate: '2025-09-10',
       lastActive: '35 mins ago',
     },
@@ -221,7 +231,8 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
     switch (role) {
       case 'Super Admin': return <Badge className="bg-purple-600">Super Admin</Badge>;
       case 'Approver': return <Badge className="bg-blue-600">Approver</Badge>;
-      case 'Data Reviewer': return <Badge className="bg-emerald-600">Data Reviewer</Badge>;
+      case 'Content Admin (Creator)': return <Badge className="bg-emerald-600">Content Admin (Creator)</Badge>;
+      case 'Data Reviewer': return <Badge className="bg-amber-600">Data Reviewer</Badge>;
       case 'Entrepreneur': return <Badge className="bg-purple-500">Entrepreneur</Badge>;
       default: return <Badge variant="secondary">Tourist</Badge>;
     }
@@ -286,6 +297,7 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
                         <SelectItem value="Entrepreneur">Entrepreneur</SelectItem>
                         <SelectItem value="Super Admin">Super Admin</SelectItem>
                         <SelectItem value="Approver">Approver</SelectItem>
+                        <SelectItem value="Content Admin (Creator)">Content Admin (Creator)</SelectItem>
                         <SelectItem value="Data Reviewer">Data Reviewer</SelectItem>
                       </SelectContent>
                     </Select>
@@ -383,13 +395,14 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
                   />
                 </div>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[230px]">
                     <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
                     <SelectItem value="Super Admin">Super Admin</SelectItem>
                     <SelectItem value="Approver">Approver</SelectItem>
+                    <SelectItem value="Content Admin (Creator)">Content Admin (Creator)</SelectItem>
                     <SelectItem value="Data Reviewer">Data Reviewer</SelectItem>
                     <SelectItem value="Entrepreneur">Entrepreneur</SelectItem>
                     <SelectItem value="Tourist">Tourist</SelectItem>
@@ -528,6 +541,9 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Approver')}>
                                <Shield className="size-4 mr-2" /> Make Approver
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Content Admin (Creator)')}>
+                               <Shield className="size-4 mr-2" /> Make Content Admin
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Data Reviewer')}>
                                <Shield className="size-4 mr-2" /> Make Data Reviewer
