@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { TrustStatus } from "../components/halal-badge";
+import { addAuditEvent } from "./prototype-audit-workflow";
 
 export type PrototypePlaceStatus =
   | "Pending Review"
   | "Under Review"
   | "Returned for Correction"
+  | "Documents Requested"
   | "Approved"
   | "Rejected"
   | "Expiring Soon"
@@ -25,6 +27,12 @@ export interface PrototypePlaceRecord {
   phone: string;
   website: string;
   adminComment?: string;
+  moderationHistory?: {
+    date: string;
+    event: string;
+    actor: string;
+    status: PrototypePlaceStatus;
+  }[];
   docs: { license: boolean; halal: boolean; sha: boolean };
   certExpiry: string;
   certAgency: string;
@@ -258,7 +266,23 @@ export function upsertPrototypePlace(place: PrototypePlaceRecord) {
 
 export function updatePrototypePlace(id: string, patch: Partial<PrototypePlaceRecord>) {
   const next = loadPrototypePlaces().map((place) =>
-    place.id === id ? { ...place, ...patch } : place
+    place.id === id
+      ? {
+          ...place,
+          ...patch,
+          moderationHistory: patch.status
+            ? [
+                ...(place.moderationHistory ?? []),
+                {
+                  date: new Date().toISOString().slice(0, 10),
+                  event: `${place.status} -> ${patch.status}`,
+                  actor: "admin@gosafar.th",
+                  status: patch.status,
+                },
+              ]
+            : place.moderationHistory,
+        }
+      : place
   );
   savePrototypePlaces(next);
   return next;
@@ -334,9 +358,29 @@ export function createSubmittedPlace(input: {
     reviews: 0,
     views: 0,
     trustStatus: "pending",
+    moderationHistory: [
+      {
+        date: new Date().toISOString().slice(0, 10),
+        event: "Submission received",
+        actor: "Demo Entrepreneur",
+        status: "Pending Review",
+      },
+    ],
   };
 
-  return upsertPrototypePlace(place);
+  const submitted = upsertPrototypePlace(place);
+  addAuditEvent({
+    actor: "demo-entrepreneur@gosafar.th",
+    role: "Business",
+    action: "Create Draft",
+    entityId: submitted.id,
+    entity: submitted.name,
+    entityType: "Place",
+    detail: "Owner submitted a new place for moderation.",
+    statusAfter: "Pending Review",
+    visibleToEntrepreneur: true,
+  });
+  return submitted;
 }
 
 export function statusToTrustStatus(place: PrototypePlaceRecord): TrustStatus {
@@ -344,8 +388,8 @@ export function statusToTrustStatus(place: PrototypePlaceRecord): TrustStatus {
   if (place.status === "Approved" || place.status === "Expiring Soon") {
     return place.certAgency ? "certified" : "source-verified";
   }
-  if (place.status === "Pending Review" || place.status === "Under Review") return "pending";
-  if (place.status === "Returned for Correction" || place.status === "Rejected") return "owner-submitted";
+  if (place.status === "Pending Review" || place.status === "Under Review" || place.status === "Documents Requested") return "pending";
+  if (place.status === "Returned for Correction" || place.status === "Rejected" || place.status === "Hidden") return "owner-submitted";
   return place.trustStatus;
 }
 

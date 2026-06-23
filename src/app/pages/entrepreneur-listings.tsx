@@ -18,7 +18,7 @@ interface EntrepreneurListingsProps {
   onLogout?: () => void;
 }
 
-type ListingStatus = 'Approved' | 'Pending Review' | 'Returned for Correction' | 'Expiring Soon' | 'Expired';
+type ListingStatus = 'Approved' | 'Pending Review' | 'Returned for Correction' | 'Documents Requested' | 'Expiring Soon' | 'Expired';
 
 interface DocTimelineEvent {
   label: string;
@@ -60,6 +60,11 @@ const STATUS_CONFIG: Record<ListingStatus, { label: string; color: string; icon:
     label: 'Returned for Correction',
     color: 'bg-rose-100 text-rose-700 border border-rose-200',
     icon: <RotateCcw className="size-3" />,
+  },
+  'Documents Requested': {
+    label: 'Documents Requested',
+    color: 'bg-blue-100 text-blue-700 border border-blue-200',
+    icon: <Upload className="size-3" />,
   },
   'Expiring Soon': {
     label: 'Expiring Soon',
@@ -185,6 +190,7 @@ function toListingStatus(status: PrototypePlaceRecord["status"]): ListingStatus 
   if (status === "Approved") return "Approved";
   if (status === "Expiring Soon") return "Expiring Soon";
   if (status === "Expired" || status === "Hidden" || status === "Rejected") return "Expired";
+  if (status === "Documents Requested") return "Documents Requested";
   if (status === "Returned for Correction") return "Returned for Correction";
   return "Pending Review";
 }
@@ -192,12 +198,13 @@ function toListingStatus(status: PrototypePlaceRecord["status"]): ListingStatus 
 function buildTimeline(place: PrototypePlaceRecord): DocTimelineEvent[] {
   const isApproved = place.status === "Approved" || place.status === "Expiring Soon";
   const isReturned = place.status === "Returned for Correction";
+  const isDocs = place.status === "Documents Requested";
   const isClosed = place.status === "Expired" || place.status === "Hidden" || place.status === "Rejected";
   return [
     { label: "Submitted", date: place.submittedDate, done: true },
     { label: "Auto-validation passed", date: place.submittedDate, done: true },
     { label: "Under admin review", date: isApproved || isReturned || isClosed ? place.submittedDate : "In progress", done: true, active: place.status === "Pending Review" || place.status === "Under Review" },
-    { label: isReturned ? "Returned for correction" : isClosed ? "Hidden / closed" : "Approved", date: isApproved || isReturned || isClosed ? "Updated in prototype" : "—", done: isApproved || isReturned || isClosed, active: isApproved || isReturned || isClosed },
+    { label: isDocs ? "Documents requested" : isReturned ? "Returned for correction" : isClosed ? "Hidden / closed" : "Approved", date: isApproved || isReturned || isDocs || isClosed ? "Updated in prototype" : "—", done: isApproved || isReturned || isDocs || isClosed, active: isApproved || isReturned || isDocs || isClosed },
   ];
 }
 
@@ -205,6 +212,7 @@ const STATUS_COUNT_LABELS: [ListingStatus, string][] = [
   ['Approved', 'Live'],
   ['Pending Review', 'Pending'],
   ['Returned for Correction', 'Needs Action'],
+  ['Documents Requested', 'Docs Needed'],
   ['Expiring Soon', 'Expiring Soon'],
   ['Expired', 'Expired'],
 ];
@@ -295,11 +303,11 @@ export function EntrepreneurListings({ onNavigate, onLogout }: EntrepreneurListi
       );
     }
 
-    if (listing.status === 'Returned for Correction') {
+    if (listing.status === 'Returned for Correction' || listing.status === 'Documents Requested') {
       actions.push(
         <Button key="edit" size="sm" onClick={() => handleAction('edit', listing.name)}
           className="flex items-center gap-1.5 text-xs h-8 bg-rose-600 hover:bg-rose-700">
-          <Edit className="size-3.5" /> Fix & Resubmit
+          <Edit className="size-3.5" /> {listing.status === 'Documents Requested' ? 'Upload & Resubmit' : 'Fix & Resubmit'}
         </Button>
       );
     }
@@ -362,6 +370,7 @@ export function EntrepreneurListings({ onNavigate, onLogout }: EntrepreneurListi
           {listings.map((listing) => (
             <Card key={listing.id} className={`${
               listing.status === 'Returned for Correction' ? 'border-rose-200' :
+              listing.status === 'Documents Requested' ? 'border-blue-200' :
               listing.status === 'Expiring Soon' ? 'border-orange-200' :
               listing.status === 'Expired' ? 'border-slate-200 opacity-80' : ''
             }`}>
@@ -410,12 +419,12 @@ export function EntrepreneurListings({ onNavigate, onLogout }: EntrepreneurListi
                     </div>
 
                     {/* Admin comment for Returned */}
-                    {listing.status === 'Returned for Correction' && listing.adminComment && (
-                      <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-md mb-3 flex items-start gap-2 text-xs">
+                    {(listing.status === 'Returned for Correction' || listing.status === 'Documents Requested') && listing.adminComment && (
+                      <div className={`${listing.status === 'Documents Requested' ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-rose-50 border-rose-200 text-rose-800'} border p-3 rounded-md mb-3 flex items-start gap-2 text-xs`}>
                         <AlertCircle className="size-4 shrink-0 mt-0.5" />
                         <div>
                           <span className="font-semibold">Admin Feedback: </span>{listing.adminComment}
-                          <div className="mt-1 opacity-80">Edit and resubmit to address this correction.</div>
+                          <div className="mt-1 opacity-80">{listing.status === 'Documents Requested' ? 'Upload the requested document and resubmit for review.' : 'Edit and resubmit to address this correction.'}</div>
                         </div>
                       </div>
                     )}

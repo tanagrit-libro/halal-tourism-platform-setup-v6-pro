@@ -27,6 +27,7 @@ import {
   statusToTrustStatus,
   usePrototypePlaces,
 } from "../data/prototype-place-workflow";
+import { addAuditEvent } from "../data/prototype-audit-workflow";
 
 interface AdminPlacesProps {
   onNavigate?: (page: string) => void;
@@ -52,6 +53,7 @@ const STATUS_CONFIG: Record<PlaceStatus, { badge: string; icon: React.ReactNode 
   'Pending Review':       { badge: 'bg-amber-100 text-amber-700 border-amber-200',       icon: <Clock className="size-3" /> },
   'Under Review':         { badge: 'bg-blue-100 text-blue-700 border-blue-200',          icon: <Eye className="size-3" /> },
   'Returned for Correction': { badge: 'bg-rose-100 text-rose-700 border-rose-200',    icon: <RotateCcw className="size-3" /> },
+  'Documents Requested':     { badge: 'bg-blue-100 text-blue-700 border-blue-200',    icon: <Upload className="size-3" /> },
   'Rejected':             { badge: 'bg-red-100 text-red-700 border-red-200',             icon: <XCircle className="size-3" /> },
   'Expiring Soon':        { badge: 'bg-orange-100 text-orange-700 border-orange-200',   icon: <AlertTriangle className="size-3" /> },
   'Expired':              { badge: 'bg-slate-100 text-slate-600 border-slate-200',      icon: <XCircle className="size-3" /> },
@@ -111,17 +113,34 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
       toast.error('A reason or comment is required for this action.');
       return;
     }
+    const previousStatus = selectedPlace.status;
     const newStatus: PlaceStatus =
       workflowAction === 'approve' || workflowAction === 'publish' ? 'Approved' :
       workflowAction === 'reject' ? 'Rejected' :
       workflowAction === 'return' ? 'Returned for Correction' :
       workflowAction === 'unpublish' ? 'Hidden' :
-      workflowAction === 'request-docs' ? 'Returned for Correction' : selectedPlace.status;
+      workflowAction === 'request-docs' ? 'Documents Requested' : selectedPlace.status;
 
     updatePlace(selectedPlace.id, {
       status: newStatus,
       adminComment: reason || undefined,
       trustStatus: statusToTrustStatus({ ...selectedPlace, status: newStatus }),
+    });
+    addAuditEvent({
+      action:
+        workflowAction === 'approve' ? 'Approve' :
+        workflowAction === 'reject' ? 'Reject' :
+        workflowAction === 'return' ? 'Return for Correction' :
+        workflowAction === 'request-docs' ? 'Request Docs' :
+        workflowAction === 'publish' ? 'Publish' : 'Unpublish',
+      entityId: selectedPlace.id,
+      entity: selectedPlace.name,
+      entityType: "Place",
+      detail: `${cfg.label} applied to ${selectedPlace.name}.`,
+      statusBefore: previousStatus,
+      statusAfter: newStatus,
+      reason: reason || undefined,
+      visibleToEntrepreneur: ['reject', 'return', 'request-docs', 'unpublish'].includes(workflowAction),
     });
     toast.success(`Action "${cfg.label}" applied to ${selectedPlace.name}.`);
     setSelectedPlace(null);
@@ -152,7 +171,7 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
 
           {/* Queue Tab */}
           <TabsContent value="queue" className="mt-4 space-y-4">
-            {(['Pending Review', 'Under Review', 'Expiring Soon', 'Expired', 'Returned for Correction'] as PlaceStatus[]).map(status => {
+            {(['Pending Review', 'Under Review', 'Documents Requested', 'Expiring Soon', 'Expired', 'Returned for Correction'] as PlaceStatus[]).map(status => {
               const items = places.filter(p => p.status === status);
               if (!items.length) return null;
               const cfg = STATUS_CONFIG[status];

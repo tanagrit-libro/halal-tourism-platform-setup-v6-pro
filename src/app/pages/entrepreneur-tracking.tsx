@@ -20,7 +20,7 @@ interface EntrepreneurTrackingProps {
   onLogout?: () => void;
 }
 
-type SubmissionStatus = 'Approved' | 'Under Review' | 'Rejected' | 'Returned for Correction';
+type SubmissionStatus = 'Approved' | 'Under Review' | 'Rejected' | 'Returned for Correction' | 'Documents Requested';
 
 interface TimelineEvent {
   date: string;
@@ -159,6 +159,7 @@ function daysUntil(date?: string) {
 
 function toSubmissionStatus(status: PrototypePlaceRecord["status"]): SubmissionStatus {
   if (status === "Approved" || status === "Expiring Soon") return "Approved";
+  if (status === "Documents Requested") return "Documents Requested";
   if (status === "Returned for Correction") return "Returned for Correction";
   if (status === "Rejected" || status === "Hidden" || status === "Expired") return "Rejected";
   return "Under Review";
@@ -171,6 +172,8 @@ function toSubmission(place: PrototypePlaceRecord): Submission {
     place.adminComment ||
     (status === "Approved"
       ? "Approved. Your listing is now live on the platform."
+      : status === "Documents Requested"
+      ? "Admin requested more documents. Please upload the requested file and resubmit."
       : status === "Returned for Correction"
       ? "Admin returned this submission for correction. Please revise and resubmit."
       : status === "Rejected"
@@ -201,6 +204,8 @@ function toSubmission(place: PrototypePlaceRecord): Submission {
         event:
           status === "Approved"
             ? "Approved & Published"
+            : status === "Documents Requested"
+            ? "Documents requested by admin"
             : status === "Returned for Correction"
             ? "Returned for correction by admin"
             : status === "Rejected"
@@ -312,13 +317,14 @@ export function EntrepreneurTracking({ onNavigate, onLogout }: EntrepreneurTrack
     total: submissions.length,
     approved: submissions.filter((s) => s.status === 'Approved').length,
     pending: submissions.filter((s) => s.status === 'Under Review').length,
-    needsAction: submissions.filter((s) => ['Returned for Correction', 'Rejected'].includes(s.status)).length,
+    needsAction: submissions.filter((s) => ['Returned for Correction', 'Documents Requested', 'Rejected'].includes(s.status)).length,
     expiring: submissions.filter((s) => s.reVerificationRequired).length,
   };
 
   const STATUS_CFG: Record<SubmissionStatus, { label: string; bg: string; icon: React.ElementType }> = {
     'Approved':          { label: 'Approved',          bg: 'bg-emerald-500', icon: CheckCircle },
     'Under Review':      { label: 'Under Review',      bg: 'bg-amber-500',   icon: Clock },
+    'Documents Requested': { label: 'Documents Requested', bg: 'bg-blue-500', icon: FileBadge },
     'Returned for Correction': { label: 'Returned for Correction', bg: 'bg-orange-500',  icon: AlertCircle },
     'Rejected':          { label: 'Rejected',          bg: 'bg-red-500',     icon: XCircle },
   };
@@ -427,9 +433,9 @@ export function EntrepreneurTracking({ onNavigate, onLogout }: EntrepreneurTrack
                       <Eye className="size-3 mr-1.5" />
                       {sub.expanded ? 'Hide Timeline' : 'View Timeline'}
                     </Button>
-                    {sub.status === 'Returned for Correction' && (
+                    {(sub.status === 'Returned for Correction' || sub.status === 'Documents Requested') && (
                       <Button size="sm" className="h-7 text-xs" onClick={() => onNavigate?.('submit')}>
-                        <RefreshCw className="size-3 mr-1.5" /> Revise & Resubmit
+                        <RefreshCw className="size-3 mr-1.5" /> {sub.status === 'Documents Requested' ? 'Upload & Resubmit' : 'Revise & Resubmit'}
                       </Button>
                     )}
                     {sub.status === 'Rejected' && (

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { usePrototypeAuditEvents } from "../data/prototype-audit-workflow";
 
 interface AdminAuditLogProps {
   onNavigate?: (page: string) => void;
@@ -24,7 +25,8 @@ interface AdminAuditLogProps {
 type EventType =
   | 'Login' | 'Logout' | 'Edit' | 'Approve' | 'Reject' | 'Return for Correction'
   | 'Import' | 'Export' | 'Publish' | 'Unpublish' | 'Revoke'
-  | 'API Key Action' | 'Auto-hide Expired' | 'Request Docs';
+  | 'API Key Action' | 'Auto-hide Expired' | 'Request Docs'
+  | 'Create Draft' | 'Submit for Review' | 'Schedule' | 'Archive' | 'Restore';
 
 interface AuditEvent {
   id: string;
@@ -70,6 +72,11 @@ const ACTION_COLORS: Partial<Record<EventType, string>> = {
   'Auto-hide Expired':  'bg-slate-50 text-slate-600 border-slate-200',
   'Unpublish':          'bg-slate-50 text-slate-600 border-slate-200',
   'Edit':               'bg-purple-50 text-purple-700 border-purple-200',
+  'Create Draft':       'bg-purple-50 text-purple-700 border-purple-200',
+  'Submit for Review':  'bg-blue-50 text-blue-700 border-blue-200',
+  'Schedule':           'bg-violet-50 text-violet-700 border-violet-200',
+  'Archive':            'bg-slate-50 text-slate-600 border-slate-200',
+  'Restore':            'bg-emerald-50 text-emerald-700 border-emerald-200',
   'Import':             'bg-indigo-50 text-indigo-700 border-indigo-200',
   'Export':             'bg-indigo-50 text-indigo-700 border-indigo-200',
   'API Key Action':     'bg-cyan-50 text-cyan-700 border-cyan-200',
@@ -78,13 +85,15 @@ const ACTION_COLORS: Partial<Record<EventType, string>> = {
 const ALL_ACTIONS: EventType[] = [
   'Login', 'Logout', 'Edit', 'Approve', 'Reject', 'Return for Correction',
   'Import', 'Export', 'Publish', 'Unpublish', 'Revoke', 'API Key Action',
-  'Auto-hide Expired', 'Request Docs'
+  'Auto-hide Expired', 'Request Docs', 'Create Draft', 'Submit for Review',
+  'Schedule', 'Archive', 'Restore'
 ];
 
 const ROLES = ['Super Admin', 'Approver', 'Content Admin', 'Data Reviewer', 'Business', 'System'];
 const ENTITY_TYPES = ['Place', 'API Key', 'Data Import', 'Data Export', 'Auth', 'Content', 'Business Account'];
 
 export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
+  const { events: dynamicEvents } = usePrototypeAuditEvents();
   const [search, setSearch] = useState('');
   const [filterAction, setFilterAction] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
@@ -94,7 +103,28 @@ export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
   const [filterIp, setFilterIp] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filtered = AUDIT_EVENTS.filter(e => {
+  const allEvents: AuditEvent[] = [
+    ...dynamicEvents.map((event): AuditEvent => ({
+      id: event.id,
+      timestamp: event.timestamp,
+      actor: event.actor,
+      role: event.role,
+      action: event.action as EventType,
+      entity: event.entity,
+      entityType: event.entityType,
+      detail: [
+        event.detail,
+        event.statusBefore && event.statusAfter ? `Status: ${event.statusBefore} -> ${event.statusAfter}.` : '',
+        event.reason ? `Reason: ${event.reason}` : '',
+      ].filter(Boolean).join(' '),
+      ip: 'local',
+      session: 'prototype',
+      status: event.status,
+    })),
+    ...AUDIT_EVENTS,
+  ];
+
+  const filtered = allEvents.filter(e => {
     const q = search.toLowerCase();
     const matchSearch = !q || e.actor.includes(q) || e.detail.toLowerCase().includes(q) || e.entity.toLowerCase().includes(q) || e.id.toLowerCase().includes(q);
     const matchAction = filterAction === 'all' || e.action === filterAction;
@@ -105,7 +135,7 @@ export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
     return matchSearch && matchAction && matchRole && matchEntity && matchStatus && matchIp;
   });
 
-  const hasActiveFilters = filterAction !== 'all' || filterRole !== 'all' || filterEntity !== 'all' || filterStatus !== 'all' || filterIp;
+	  const hasActiveFilters = filterAction !== 'all' || filterRole !== 'all' || filterEntity !== 'all' || filterStatus !== 'all' || filterIp;
   const clearFilters = () => { setFilterAction('all'); setFilterRole('all'); setFilterEntity('all'); setFilterStatus('all'); setFilterIp(''); };
 
   return (
@@ -230,7 +260,7 @@ export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="size-4" /> Activity Log
               </CardTitle>
-              <p className="text-xs text-muted-foreground">{filtered.length} of {AUDIT_EVENTS.length} events</p>
+	              <p className="text-xs text-muted-foreground">{filtered.length} of {allEvents.length} events</p>
             </div>
           </CardHeader>
           <CardContent>

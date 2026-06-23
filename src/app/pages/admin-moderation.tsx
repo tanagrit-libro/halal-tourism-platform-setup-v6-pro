@@ -22,6 +22,7 @@ import {
   statusToTrustStatus,
   usePrototypePlaces,
 } from "../data/prototype-place-workflow";
+import { addAuditEvent } from "../data/prototype-audit-workflow";
 
 interface AdminModerationProps {
   onNavigate?: (page: string) => void;
@@ -97,6 +98,7 @@ function toModerationStatus(status: PrototypePlaceStatus) {
   if (status === "Pending Review") return "Pending";
   if (status === "Under Review") return "Reviewed";
   if (status === "Returned for Correction") return "Returned for Correction";
+  if (status === "Documents Requested") return "Documents Requested";
   if (status === "Hidden") return "Rejected";
   return status;
 }
@@ -105,8 +107,10 @@ function fromModerationStatus(status: string): PrototypePlaceStatus {
   if (status === "Pending") return "Pending Review";
   if (status === "Reviewed") return "Under Review";
   if (status === "Returned for Correction") return "Returned for Correction";
+  if (status === "Documents Requested") return "Documents Requested";
   if (status === "Approved") return "Approved";
   if (status === "Rejected") return "Rejected";
+  if (status === "Hidden") return "Hidden";
   return "Pending Review";
 }
 
@@ -144,8 +148,9 @@ function toPlaceItem(place: PrototypePlaceRecord, expanded: boolean): PlaceItem 
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
   'Pending':          { color: 'text-amber-700',   bg: 'bg-amber-100 border-amber-300',   label: 'Pending Review' },
-  'Reviewed':         { color: 'text-blue-700',    bg: 'bg-blue-100 border-blue-300',     label: 'Reviewed' },
+  'Reviewed':         { color: 'text-blue-700',    bg: 'bg-blue-100 border-blue-300',     label: 'Under Review' },
   'Returned for Correction':{ color: 'text-orange-700',  bg: 'bg-orange-100 border-orange-300', label: 'Returned for Correction' },
+  'Documents Requested':{ color: 'text-blue-700',  bg: 'bg-blue-100 border-blue-300', label: 'Documents Requested' },
   'Approved':         { color: 'text-emerald-700', bg: 'bg-emerald-100 border-emerald-300',label: 'Approved' },
   'Rejected':         { color: 'text-red-700',     bg: 'bg-red-100 border-red-300',       label: 'Rejected' },
   'Expiring Soon':    { color: 'text-orange-700',  bg: 'bg-orange-100 border-orange-300', label: 'Expiring Soon' },
@@ -243,7 +248,27 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
   };
 
   const action = (id: string, newStatus: string, extra?: Partial<PlaceItem>) => {
+    const existing = prototypePlaces.find((p) => p.id === id);
     update(id, { status: newStatus, ...extra });
+    if (existing) {
+      const nextStatus = fromModerationStatus(newStatus);
+      addAuditEvent({
+        action:
+          newStatus === 'Approved' ? 'Approve' :
+          newStatus === 'Rejected' ? 'Reject' :
+          newStatus === 'Returned for Correction' ? 'Return for Correction' :
+          newStatus === 'Documents Requested' ? 'Request Docs' :
+          newStatus === 'Hidden' ? 'Unpublish' : 'Edit',
+        entityId: existing.id,
+        entity: existing.name,
+        entityType: "Place",
+        detail: `Moderation action applied: ${newStatus}.`,
+        statusBefore: existing.status,
+        statusAfter: nextStatus,
+        reason: extra?.notes,
+        visibleToEntrepreneur: ['Returned for Correction', 'Documents Requested', 'Rejected', 'Hidden'].includes(newStatus),
+      });
+    }
     toast.success(`Action applied: ${newStatus}`);
   };
 
@@ -254,7 +279,8 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
 
   const tabs = [
     { key: 'pending',   label: 'Pending Review',   items: byStatus('Pending') },
-    { key: 'reviewed',  label: 'Reviewed',          items: byStatus('Reviewed') },
+    { key: 'reviewed',  label: 'Under Review',          items: byStatus('Reviewed') },
+    { key: 'docs',      label: 'Documents Requested', items: byStatus('Documents Requested') },
     { key: 'returned',  label: 'Returned for Correction', items: byStatus('Returned for Correction') },
     { key: 'approved',  label: 'Approved',          items: byStatus('Approved') },
     { key: 'rejected',  label: 'Rejected',          items: byStatus('Rejected') },
@@ -372,7 +398,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
                   id={`autohide-${place.id}`}
                   checked={place.isAutoHidden}
                   onCheckedChange={(v) => {
-                    update(place.id, { isAutoHidden: v });
+                    action(place.id, v ? 'Hidden' : 'Approved');
                     toast.info(v ? 'Listing auto-hidden from public view' : 'Auto-hide removed — listing visible again');
                   }}
                 />
@@ -398,7 +424,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
                   <FileEdit className="size-3.5 mr-1.5" /> Return for Correction
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 text-xs border-amber-400 text-amber-700 hover:bg-amber-50"
-                  onClick={() => { update(place.id, { documentsMissing: place.documentsMissing.length ? place.documentsMissing : ['Certificate document'] }); toast.info('Document request sent to entrepreneur'); }}>
+                  onClick={() => action(place.id, 'Documents Requested', { notes: noteInput[place.id] || 'Please upload the requested certification document.' })}>
                   <FileBadge className="size-3.5 mr-1.5" /> Request Document
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 text-xs border-red-300 text-red-600 hover:bg-red-50"
@@ -427,7 +453,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
                   <FileEdit className="size-3.5 mr-1.5" /> Return for Correction
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 text-xs border-amber-400 text-amber-700 hover:bg-amber-50"
-                  onClick={() => toast.info('Document request sent to entrepreneur')}>
+                  onClick={() => action(place.id, 'Documents Requested', { notes: noteInput[place.id] || 'Please upload the requested certification document.' })}>
                   <FileBadge className="size-3.5 mr-1.5" /> Request Document
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 text-xs border-red-300 text-red-600 hover:bg-red-50"
@@ -454,17 +480,33 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
               </>
             )}
 
+            {place.status === 'Documents Requested' && (
+              <>
+                <span className="text-xs text-blue-600 flex items-center gap-1 mr-2">
+                  <FileBadge className="size-3.5" /> Waiting for documents
+                </span>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs"
+                  onClick={() => action(place.id, 'Reviewed')}>
+                  <RefreshCw className="size-3.5 mr-1.5" /> Resume Review
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 text-xs"
+                  onClick={() => action(place.id, 'Returned for Correction', { notes: noteInput[place.id] || '' })}>
+                  <FileEdit className="size-3.5 mr-1.5" /> Return for Correction
+                </Button>
+              </>
+            )}
+
             {/* Approved actions */}
             {place.status === 'Approved' && (
               <>
                 {place.isPublished ? (
                   <Button size="sm" variant="outline" className="h-8 text-xs border-slate-400 text-slate-600 hover:bg-slate-50"
-                    onClick={() => { update(place.id, { isPublished: false }); toast.info('Listing unpublished'); }}>
+                    onClick={() => action(place.id, 'Hidden', { notes: noteInput[place.id] || 'Listing unpublished by admin.' })}>
                     <EyeOff className="size-3.5 mr-1.5" /> Unpublish
                   </Button>
                 ) : (
                   <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
-                    onClick={() => { update(place.id, { isPublished: true }); toast.success('Listing published'); }}>
+                    onClick={() => action(place.id, 'Approved')}>
                     <Eye className="size-3.5 mr-1.5" /> Publish
                   </Button>
                 )}
@@ -479,7 +521,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
             {place.status === 'Rejected' && (
               <>
                 <Button size="sm" variant="outline" className="h-8 text-xs"
-                  onClick={() => action(place.id, 'Pending', { isAutoHidden: false })}>
+                  onClick={() => action(place.id, 'Pending')}>
                   <RefreshCw className="size-3.5 mr-1.5" /> Restore to Queue
                 </Button>
                 <span className="text-xs text-slate-500 flex items-center gap-1">
