@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import {
   Search, MapPin, CheckCircle, XCircle, AlertCircle, Clock, EyeOff,
   RotateCcw, Eye, FileText, Upload, RefreshCw, ChevronDown, ChevronUp,
-  AlertTriangle
+  AlertTriangle, LockKeyhole
 } from "lucide-react";
 import { useState } from "react";
 import { PLACE_TYPE_LABELS } from "../data/place-types";
@@ -38,6 +38,8 @@ type PlaceStatus = PrototypePlaceStatus;
 type Place = PrototypePlaceRecord;
 
 type WorkflowAction = 'approve' | 'reject' | 'return' | 'request-docs' | 'publish' | 'unpublish';
+
+const SHOW_SECURITY_PDPA_INDICATORS = false;
 
 const WORKFLOW_CONFIG: Record<WorkflowAction, { label: string; color: string; requiresReason: boolean }> = {
   'approve':      { label: 'Approve for Publication',      color: 'bg-emerald-600 hover:bg-emerald-700', requiresReason: false },
@@ -156,6 +158,25 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
           <p className="text-muted-foreground">Verify source records, manage certification, and govern listing visibility.</p>
         </div>
 
+        {SHOW_SECURITY_PDPA_INDICATORS && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <LockKeyhole className="size-5 text-blue-700 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-blue-900">Sensitive data controls active</p>
+                  <p className="text-sm text-blue-800">
+                    Certification files and business contact details are restricted to Super Admin and Place Manager actions, with every sensitive access logged.
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => onNavigate?.("security-pdpa")} className="shrink-0">
+                View Security & PDPA
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Tabs defaultValue="all">
           <TabsList>
             <TabsTrigger value="all">All Places</TabsTrigger>
@@ -251,6 +272,7 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
                       <TableHead>Type</TableHead>
                       <TableHead>Province</TableHead>
                       <TableHead>Status</TableHead>
+                      {SHOW_SECURITY_PDPA_INDICATORS && <TableHead>Sensitive Data</TableHead>}
                       <TableHead>Auto-Validation</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -266,6 +288,18 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
                           <TableCell>{place.type}</TableCell>
                           <TableCell>{place.province}</TableCell>
                           <TableCell>{getStatusBadge(place.status)}</TableCell>
+                          {SHOW_SECURITY_PDPA_INDICATORS && (
+                            <TableCell>
+                              <div className="flex flex-col gap-1">
+                                <Badge variant="outline" className="w-fit bg-blue-50 text-blue-700 border-blue-200">
+                                  <LockKeyhole className="size-3 mr-1" /> Restricted docs
+                                </Badge>
+                                {place.phone && (
+                                  <span className="text-xs text-muted-foreground">Contact masked in exports</span>
+                                )}
+                              </div>
+                            </TableCell>
+                          )}
                           <TableCell>
                             <button
                               className="flex items-center gap-1.5 text-xs group"
@@ -361,6 +395,12 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
                   <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                     <FileText className="size-4 text-blue-500" /> Certification Documents
                   </h4>
+                  {SHOW_SECURITY_PDPA_INDICATORS && (
+                    <div className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800 flex gap-2">
+                      <LockKeyhole className="size-4 shrink-0" />
+                      <span>Documents are treated as protected files: encrypted storage, restricted review access, and audit logging for every view/download.</span>
+                    </div>
+                  )}
                   <div className="flex gap-2 flex-wrap">
                     {([['Business License', selectedPlace.docs.license], ['Halal Certificate', selectedPlace.docs.halal], ['SHA Standard', selectedPlace.docs.sha]] as [string, boolean][]).map(([doc, present]) => (
                       <div key={doc} className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border ${

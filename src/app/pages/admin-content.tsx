@@ -69,7 +69,7 @@ function blankForm(): Omit<PrototypeContentRecord, "id" | "createdAt" | "updated
     excerpt: "",
     body: "",
     coverImage: "",
-    author: "Content Admin",
+    author: "Content Manager",
     status: "Draft",
     tags: [],
     relatedPlaceIds: [],

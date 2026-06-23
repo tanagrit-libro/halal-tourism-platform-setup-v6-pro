@@ -90,7 +90,7 @@ const MOCK_LISTINGS: Listing[] = [
     views: 1245,
     status: 'Approved',
     trustStatus: 'certified',
-    certAgency: 'CICOT',
+    certAgency: 'CICOT (Central Islamic Council of Thailand)',
     lastUpdated: '2026-01-15',
     certExpiry: '2027-01-14',
     timeline: [
@@ -152,7 +152,7 @@ const MOCK_LISTINGS: Listing[] = [
     views: 800,
     status: 'Expiring Soon',
     trustStatus: 'certified',
-    certAgency: 'HALA Thailand',
+    certAgency: 'THSI (The Halal Standard Institute of Thailand)',
     lastUpdated: '2025-06-01',
     certExpiry: '2026-07-01',
     timeline: [

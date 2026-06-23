@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
 import { TrustBadge, TrustStatus } from "../components/halal-badge";
-import { PLACE_TYPES } from "../data/place-types";
 import {
   Search,
   MapPin,
@@ -18,26 +17,19 @@ import {
   Layers,
   LocateFixed,
   Hotel,
-  Plane,
-  Train,
-  Target,
   UtensilsCrossed,
   Coffee,
   Building2,
   Star,
-  Shield,
   CheckCircle2,
   ChevronRight,
-  ShoppingBag,
-  Leaf,
-  HelpCircle,
 } from "lucide-react";
 
 interface TouristMapExplorerProps extends TouristAuthProps {
   onNavigate?: (page: string) => void;
 }
 
-type StartMode = "location" | "hotel" | "airport" | "station" | "custom";
+type StartMode = "location";
 
 type LayerState = Record<string, boolean>;
 
@@ -108,8 +100,8 @@ const NEARBY_PLACES: NearbyPlace[] = [
   },
   {
     id: "7",
-    name: "Railay Beach Stopover",
-    category: "Stopover",
+    name: "Railay Beach Prayer Room",
+    category: "Prayer Facility",
     province: "Krabi",
     distance: "1.6 km",
     rating: 4.5,
@@ -136,26 +128,25 @@ const LAYER_CONFIG: {
   { key: "restaurant", label: "Restaurants", icon: UtensilsCrossed, color: "text-red-500", dot: "bg-red-500" },
   { key: "cafe", label: "Cafes", icon: Coffee, color: "text-amber-500", dot: "bg-amber-500" },
   { key: "hotel", label: "Hotels", icon: Hotel, color: "text-blue-500", dot: "bg-blue-500" },
-  { key: "resort", label: "Resorts", icon: Hotel, color: "text-cyan-500", dot: "bg-cyan-500" },
   { key: "mosque", label: "Mosques", icon: Building2, color: "text-purple-500", dot: "bg-purple-500" },
   { key: "prayer-facility", label: "Prayer Facilities", icon: Building2, color: "text-violet-500", dot: "bg-violet-500" },
   { key: "attraction", label: "Attractions", icon: Star, color: "text-orange-500", dot: "bg-orange-500" },
-  { key: "shopping", label: "Shopping / Malls", icon: ShoppingBag, color: "text-pink-500", dot: "bg-pink-500" },
-  { key: "spa-wellness", label: "Spa / Wellness", icon: Leaf, color: "text-teal-500", dot: "bg-teal-500" },
-  { key: "stopover", label: "Stopovers", icon: MapPin, color: "text-gray-500", dot: "bg-gray-500" },
-  { key: "other", label: "Other", icon: HelpCircle, color: "text-slate-500", dot: "bg-slate-500" },
-  { key: "amenities", label: "Amenities", icon: Shield, color: "text-teal-500", dot: "bg-teal-500" },
-  { key: "certification", label: "Certification Status Overlay", icon: CheckCircle2, color: "text-emerald-500", dot: "bg-emerald-500" },
 ];
+
+const CATEGORY_LAYER_KEY: Record<string, string> = {
+  Restaurant: "restaurant",
+  Cafe: "cafe",
+  Hotel: "hotel",
+  Mosque: "mosque",
+  "Prayer Facility": "prayer-facility",
+  Attraction: "attraction",
+};
 
 export function TouristMapExplorer({ onNavigate, isTouristLoggedIn, onTouristLogout }: TouristMapExplorerProps) {
   const [startMode, setStartMode] = useState<StartMode>("location");
-  const [customPlace, setCustomPlace] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [layers, setLayers] = useState<LayerState>({
-    ...Object.fromEntries(PLACE_TYPES.map((type) => [type.value, true])),
-    amenities: true,
-    certification: true,
+    ...Object.fromEntries(LAYER_CONFIG.map((layer) => [layer.key, true])),
   });
   const [showLayerDropdown, setShowLayerDropdown] = useState(false);
   const [legendCollapsed, setLegendCollapsed] = useState(false);
@@ -166,13 +157,12 @@ export function TouristMapExplorer({ onNavigate, isTouristLoggedIn, onTouristLog
 
   const startModes: { mode: StartMode; icon: React.ElementType; label: string }[] = [
     { mode: "location", icon: LocateFixed, label: "Current Location" },
-    { mode: "hotel", icon: Hotel, label: "Hotel" },
-    { mode: "airport", icon: Plane, label: "Airport" },
-    { mode: "station", icon: Train, label: "Station" },
-    { mode: "custom", icon: Target, label: "Custom Place" },
   ];
 
   const filteredPlaces = NEARBY_PLACES.filter((p) => {
+    const layerKey = CATEGORY_LAYER_KEY[p.category];
+    const visibleByLayer = !!layerKey && layers[layerKey];
+    if (!visibleByLayer) return false;
     if (!searchQuery) return true;
     return (
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -211,17 +201,6 @@ export function TouristMapExplorer({ onNavigate, isTouristLoggedIn, onTouristLog
                   </button>
                 ))}
               </div>
-              {startMode === "custom" && (
-                <div className="relative">
-                  <Target className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                  <Input
-                    placeholder="Enter a place name..."
-                    value={customPlace}
-                    onChange={(e) => setCustomPlace(e.target.value)}
-                    className="pl-9 text-sm h-8"
-                  />
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -394,7 +373,7 @@ export function TouristMapExplorer({ onNavigate, isTouristLoggedIn, onTouristLog
               Place Type
             </p>
             <div className="space-y-1.5 mb-3">
-              {LAYER_CONFIG.filter((item) => item.key !== "amenities" && item.key !== "certification").map((item) => (
+              {LAYER_CONFIG.map((item) => (
                 <div key={item.key} className="flex items-center gap-2">
                   <div className={`size-3 rounded-full shrink-0 ${item.dot}`} />
                   <span className="text-xs text-gray-700">{item.label}</span>
@@ -402,37 +381,32 @@ export function TouristMapExplorer({ onNavigate, isTouristLoggedIn, onTouristLog
               ))}
             </div>
 
-            {/* Trust Status (only when certification layer is ON) */}
-            {layers.certification && (
-              <>
-                <Separator className="mb-2" />
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Trust Status
-                </p>
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="size-3 rounded-full bg-emerald-500 shrink-0" />
-                    <span className="text-xs text-gray-700">Certified by Agency</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-3 rounded-full border-2 border-blue-500 bg-blue-100 shrink-0" />
-                    <span className="text-xs text-gray-700">Source-Verified</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-3 rounded-full bg-amber-400 shrink-0" />
-                    <span className="text-xs text-gray-700">Pending Review</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-3 rounded-full bg-red-400 shrink-0" />
-                    <span className="text-xs text-gray-700">Certificate Expired</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-3 rounded-full bg-gray-300 shrink-0" />
-                    <span className="text-xs text-gray-700">Owner Submitted</span>
-                  </div>
-                </div>
-              </>
-            )}
+            <Separator className="mb-2" />
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+              Trust Status
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="size-3 rounded-full bg-emerald-500 shrink-0" />
+                <span className="text-xs text-gray-700">Certified by Agency</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="size-3 rounded-full border-2 border-blue-500 bg-blue-100 shrink-0" />
+                <span className="text-xs text-gray-700">Source-Verified</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="size-3 rounded-full bg-amber-400 shrink-0" />
+                <span className="text-xs text-gray-700">Pending Review</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="size-3 rounded-full bg-red-400 shrink-0" />
+                <span className="text-xs text-gray-700">Certificate Expired</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="size-3 rounded-full bg-gray-300 shrink-0" />
+                <span className="text-xs text-gray-700">Owner Submitted</span>
+              </div>
+            </div>
             </div>}
           </div>
         </div>

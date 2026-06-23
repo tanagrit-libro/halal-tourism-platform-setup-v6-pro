@@ -8,6 +8,7 @@ import { Search, MapPin, Sparkles, Info, ChevronDown, CheckCircle2 } from "lucid
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { useLanguage } from "../context/LanguageContext";
 import { TrustStatus } from "../components/halal-badge";
+import { CERTIFYING_SOURCES } from "../data/prototype-options";
 import { toast } from "sonner";
 
 // จังหวัดทั้งหมด 77 จังหวัดของไทย
@@ -254,7 +255,7 @@ export function TouristHome({ onNavigate, isTouristLoggedIn, onTouristLogout, on
       reviews: 120,
       image: 'https://images.unsplash.com/photo-1769265114898-083ad50197f4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxUaGFpJTIwcmVzdGF1cmFudCUyMG1vZGVybiUyMG1hbGx8ZW58MXx8fHwxNzcwNjY1ODgzfDA&ixlib=rb-4.1.0&q=80&w=1080',
       trustStatus: 'certified',
-      agency: 'CICOT',
+      agency: CERTIFYING_SOURCES[0],
     },
     {
       id: '14',
@@ -265,7 +266,7 @@ export function TouristHome({ onNavigate, isTouristLoggedIn, onTouristLogout, on
       reviews: 350,
       image: 'https://images.unsplash.com/photo-1652024057080-77d76186ebf6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBob3RlbCUyMGJhbmdrb2slMjByaXZlciUyMHZpZXd8ZW58MXx8fHwxNzcwNjY1ODgzfDA&ixlib=rb-4.1.0&q=80&w=1080',
       trustStatus: 'source-verified',
-      source: 'TAT Dataset',
+      source: CERTIFYING_SOURCES[3],
     },
     {
       id: '36',
@@ -286,7 +287,7 @@ export function TouristHome({ onNavigate, isTouristLoggedIn, onTouristLogout, on
       reviews: 1500,
       image: 'https://images.unsplash.com/photo-1678915554115-a5e2de853191?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxUaGUlMjBHcmFuZCUyMFBhbGFjZSUyMEJhbmdrb2t8ZW58MXx8fHwxNzcwNjY1ODcxfDA&ixlib=rb-4.1.0&q=80&w=1080',
       trustStatus: 'source-verified',
-      source: 'TAT Dataset',
+      source: CERTIFYING_SOURCES[3],
     },
   ];
 

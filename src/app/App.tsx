@@ -12,7 +12,7 @@ import { Badge } from "./components/ui/badge";
 
 type Portal = 'landing' | 'walkthrough' | 'tourist' | 'admin' | 'entrepreneur';
 type TouristPage = 'home' | 'login' | 'register' | 'search' | 'map' | 'place-detail' | 'ai-planner' | 'favorites' | 'my-trips' | 'articles' | 'article-detail' | 'settings' | 'prayer';
-type AdminPage = 'login' | 'dashboard' | 'users' | 'moderation' | 'reports' | 'api-keys' | 'audit-log' | 'prayer' | 'master-data' | 'places' | 'content';
+type AdminPage = 'login' | 'dashboard' | 'users' | 'moderation' | 'reports' | 'api-keys' | 'audit-log' | 'prayer' | 'master-data' | 'places' | 'content' | 'security-pdpa' | 'support';
 type EntrepreneurPage = 'login' | 'register' | 'submit' | 'tracking' | 'listings' | 'support' | 'dashboard' | 'prayer' | 'profile';
 
 const TouristHome = lazy(() => import("./pages/tourist-home").then((module) => ({ default: module.TouristHome })));
@@ -40,6 +40,8 @@ const AdminPrayer = lazy(() => import("./pages/admin-prayer").then((module) => (
 const AdminMasterData = lazy(() => import("./pages/admin-master-data").then((module) => ({ default: module.AdminMasterData })));
 const AdminPlaces = lazy(() => import("./pages/admin-places").then((module) => ({ default: module.AdminPlaces })));
 const AdminContent = lazy(() => import("./pages/admin-content").then((module) => ({ default: module.AdminContent })));
+const AdminSecurityPDPA = lazy(() => import("./pages/admin-security-pdpa").then((module) => ({ default: module.AdminSecurityPDPA })));
+const AdminSupport = lazy(() => import("./pages/admin-support").then((module) => ({ default: module.AdminSupport })));
 
 const EntrepreneurLogin = lazy(() => import("./pages/entrepreneur-login").then((module) => ({ default: module.EntrepreneurLogin })));
 const EntrepreneurRegister = lazy(() => import("./pages/entrepreneur-register").then((module) => ({ default: module.EntrepreneurRegister })));
@@ -137,7 +139,7 @@ function AppContent() {
 
   const walkthroughItems = [
     { step: 1, portal: 'Tourist', title: 'Landing — Neutral Branding & Data Source', desc: 'Review data governance statement, trust explanation, and source disclaimers. No halal certification claim.' },
-    { step: 2, portal: 'Tourist', title: 'Search — Filters, Source & Status Badges', desc: 'Filter by province, certification source (CICOT, TAT, HALA), status badges, and amenities.', action: () => { setCurrentPortal('tourist'); setTouristPage('search'); } },
+    { step: 2, portal: 'Tourist', title: 'Search — Filters, Source & Status Badges', desc: 'Filter by province, approved certifying source, and amenities.', action: () => { setCurrentPortal('tourist'); setTouristPage('search'); } },
     { step: 3, portal: 'Tourist', title: 'Place Detail — Certification & Source Record', desc: 'View source record, certifying agency, expiry date, and transparency disclaimer per place.', action: () => { setCurrentPortal('tourist'); setTouristPage('place-detail'); } },
     { step: 4, portal: 'Tourist', title: 'Map Explorer — Layers, Pins & Legend', desc: 'Toggle map layers (restaurants, mosques, hotels), view pin legend, and apply source filters.', action: () => { setCurrentPortal('tourist'); setTouristPage('map'); } },
     { step: 5, portal: 'Tourist', title: 'AI Trip Planner — Route, Quota & Alternatives', desc: 'Generate multi-province itinerary with start point, reasons, alternatives, and AI quota disclosure.', action: () => { setCurrentPortal('tourist'); setTouristPage('ai-planner'); } },
@@ -296,7 +298,7 @@ function AppContent() {
               {[
                 { icon: '📊', title: 'Survey Evidence', body: '428 survey responses across stakeholder groups informing platform design and feature priorities.' },
                 { icon: '🗺️', title: '8 Province Groups', body: 'Coverage across 8 regional province clusters, from Bangkok Metro to Deep South border provinces.' },
-                { icon: '🏛️', title: 'Multi-Agency Data', body: 'Data sourced from TAT, CICOT, HALA Thailand, JAKIM, and verified operator submissions.' },
+                { icon: '🏛️', title: 'Multi-Agency Data', body: 'Data sourced from approved Thai halal and tourism partner sources, plus verified operator submissions.' },
                 { icon: '🤖', title: 'AI Transparency', body: 'AI trip planner discloses reasoning, quota limits per request, and confidence for each suggested route.' },
                 { icon: '📋', title: 'Document Expiry Automation', body: 'Certification expiry tracked automatically; listings flagged 30 days before renewal and archived on expiry.' },
                 { icon: '🔗', title: 'Information Support System', body: 'Platform acts as an information and service support layer. Certification authority remains with the relevant agency.' },
@@ -330,7 +332,7 @@ function AppContent() {
         {/* Footer */}
         <footer className="border-t py-6 bg-white">
           <div className="container mx-auto px-4 text-center text-xs text-muted-foreground">
-            © 2026 {t('app.name')}. Information and Service Support Platform. Data sourced from TAT, CICOT, HALA Thailand, and partner agencies.
+            © 2026 {t('app.name')}. Information and Service Support Platform. Data sourced from approved Thai halal and tourism partner sources.
           </div>
         </footer>
       </div>
@@ -465,6 +467,8 @@ function AppContent() {
       'master-data': <AdminMasterData onNavigate={handleAdminNavigate} onLogout={handleAdminLogout} />,
       'places': <AdminPlaces onNavigate={handleAdminNavigate} onLogout={handleAdminLogout} />,
       'content': <AdminContent onNavigate={handleAdminNavigate} onLogout={handleAdminLogout} />,
+      'security-pdpa': <AdminSecurityPDPA onNavigate={handleAdminNavigate} onLogout={handleAdminLogout} />,
+      'support': <AdminSupport onNavigate={handleAdminNavigate} onLogout={handleAdminLogout} />,
     };
 
     return (

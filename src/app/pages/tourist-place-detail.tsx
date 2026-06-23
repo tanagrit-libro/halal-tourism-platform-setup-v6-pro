@@ -225,7 +225,7 @@ export function TouristPlaceDetail({
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="flex items-center gap-2">
                       <Utensils className="size-5 text-emerald-500" />
-                      <span>Muslim-Friendly Menu</span>
+                      <span>Halal-Friendly Menu</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="size-5 text-emerald-500" />
@@ -301,7 +301,7 @@ export function TouristPlaceDetail({
                         <Separator />
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Data Provider</span>
-                          <span className="font-medium">CICOT Thailand</span>
+                          <span className="font-medium">CICOT (Central Islamic Council of Thailand)</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between text-sm">
@@ -339,8 +339,8 @@ export function TouristPlaceDetail({
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Certifying Agency</span>
-                          <span className="font-medium text-right">CICOT Thailand (Central Islamic Council of Thailand)</span>
+                          <span className="text-muted-foreground">Certifying Source</span>
+                          <span className="font-medium text-right">CICOT (Central Islamic Council of Thailand)</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between text-sm">
@@ -607,8 +607,8 @@ export function TouristPlaceDetail({
                 <TrustBadge status="expired" size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Certifying Agency</span>
-                <span className="text-sm font-medium">CICOT Thailand</span>
+                <span className="text-sm text-muted-foreground">Certifying Source</span>
+                <span className="text-sm font-medium">CICOT (Central Islamic Council of Thailand)</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Certificate No.</span>

@@ -6,32 +6,18 @@ import { Calendar, MapPin, Clock, Trash2, Share2, Download, LogIn } from "lucide
 import { toast } from "sonner";
 import { useState } from "react";
 import { TouristAuthProps } from "../types/tourist-auth";
+import {
+  countSavedTripPlaces,
+  SAVED_TRIP_ITINERARIES,
+  SELECTED_SAVED_TRIP_KEY,
+} from "../data/tourist-saved-trips";
 
 interface TouristMyTripsProps extends TouristAuthProps {
   onNavigate?: (page: string) => void;
 }
 
 export function TouristMyTrips({ onNavigate, isTouristLoggedIn, onTouristLogout }: TouristMyTripsProps) {
-  const [trips, setTrips] = useState([
-    {
-      id: '1',
-      name: 'Bangkok Halal Adventure',
-      date: 'Feb 10 - Feb 12, 2026',
-      duration: '3 Days',
-      places: 12,
-      image: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800',
-      status: 'Upcoming'
-    },
-    {
-      id: '2',
-      name: 'Phuket Beach Retreat',
-      date: 'Jan 15 - Jan 20, 2026',
-      duration: '5 Days',
-      places: 8,
-      image: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800',
-      status: 'Completed'
-    }
-  ]);
+  const [trips, setTrips] = useState(SAVED_TRIP_ITINERARIES);
 
   const handleDelete = (id: string) => {
     setTrips(trips.filter(t => t.id !== id));
@@ -46,6 +32,11 @@ export function TouristMyTrips({ onNavigate, isTouristLoggedIn, onTouristLogout 
   const handleExport = (tripName: string) => {
       // Simulating export
       toast.success(`Exported "${tripName}" to JSON`);
+  };
+
+  const handleViewDetails = (tripId: string) => {
+    window.localStorage.setItem(SELECTED_SAVED_TRIP_KEY, tripId);
+    onNavigate?.('ai-planner');
   };
 
   return (
@@ -117,11 +108,11 @@ export function TouristMyTrips({ onNavigate, isTouristLoggedIn, onTouristLogout 
                     
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <MapPin className="size-4" />
-                      {trip.places} Places planned
+                      {countSavedTripPlaces(trip)} Places planned
                     </div>
 
                     <div className="flex gap-2 pt-4">
-                      <Button className="flex-1" variant="outline" onClick={() => onNavigate?.('ai-planner')}>
+                      <Button className="flex-1" variant="outline" onClick={() => handleViewDetails(trip.id)}>
                         View Details
                       </Button>
                       <Button size="icon" variant="outline" onClick={() => handleShare(trip.name)}>

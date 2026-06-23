@@ -59,9 +59,9 @@ const submissionData = [
 ];
 
 const recentActivity = [
-  { id: 1, actor: 'Ahmad (Approver)',     action: 'Approved for publication', target: 'Yana Halal Restaurant',     time: '5 min ago',  type: 'approve' },
+  { id: 1, actor: 'Ahmad (Place Manager)', action: 'Approved for publication', target: 'Yana Halal Restaurant',     time: '5 min ago',  type: 'approve' },
   { id: 2, actor: 'System',              action: 'Auto-hidden expired listing', target: 'Old Town Kebab House',    time: '12 min ago', type: 'auto-hide' },
-  { id: 3, actor: 'Sarah (Data Rev.)',   action: 'Returned for correction',    target: 'Phuket Beach Resort',      time: '28 min ago', type: 'return' },
+  { id: 3, actor: 'Sarah (Place Manager)', action: 'Returned for correction',    target: 'Phuket Beach Resort',      time: '28 min ago', type: 'return' },
   { id: 4, actor: 'Entrepreneur',        action: 'New submission',             target: 'Chiang Mai Halal Cafe',    time: '1 hr ago',   type: 'submit' },
   { id: 5, actor: 'Reza (Super Admin)',  action: 'API key rotated',            target: 'Mobile App Production',    time: '2 hr ago',   type: 'api' },
 ];

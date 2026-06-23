@@ -10,7 +10,7 @@ import {
 import {
   Plus, Search, Edit, Trash2, ShieldCheck, Database, Building2,
   Tag, BarChart3, FileInput, FileOutput, Handshake, CheckCircle,
-  AlertCircle, Clock, Download, Upload
+  AlertCircle, Clock, Download, Upload, LockKeyhole
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,12 +20,14 @@ interface AdminMasterDataProps {
   onLogout?: () => void;
 }
 
+const SHOW_SECURITY_PDPA_INDICATORS = false;
+
 const CERTIFYING_AGENCIES = [
-  { id: 1, code: 'CICOT',   name: 'Central Islamic Council of Thailand',      country: 'Thailand', status: 'Active',   certCount: 845 },
-  { id: 2, code: 'IHC',     name: 'Islamic Halal Certification of Thailand',  country: 'Thailand', status: 'Active',   certCount: 312 },
-  { id: 3, code: 'MUIS',    name: 'Majlis Ugama Islam Singapura',             country: 'Singapore', status: 'Active',  certCount: 128 },
-  { id: 4, code: 'JAKIM',   name: 'Jabatan Kemajuan Islam Malaysia',          country: 'Malaysia', status: 'Active',   certCount: 94 },
-  { id: 5, code: 'HMA',     name: 'Halal Media Australia',                    country: 'Australia', status: 'Inactive', certCount: 0 },
+  { id: 1, code: 'CICOT', name: 'CICOT (Central Islamic Council of Thailand)', country: 'Thailand', status: 'Active', certCount: 845 },
+  { id: 2, code: 'THSI', name: 'THSI (The Halal Standard Institute of Thailand)', country: 'Thailand', status: 'Active', certCount: 312 },
+  { id: 3, code: 'PSU', name: 'สถาบันฮาลาล ม.อ. (Halal Inst. PSU)', country: 'Thailand', status: 'Active', certCount: 128 },
+  { id: 4, code: 'TAHTA', name: 'TAHTA (Thai-ASEAN Halal Trade and Tourism Association)', country: 'Thailand', status: 'Active', certCount: 94 },
+  { id: 5, code: 'TMTA', name: 'TMTA (Thai Muslim Trade Association)', country: 'Thailand', status: 'Active', certCount: 76 },
 ];
 
 const DATA_SOURCES = [
@@ -39,7 +41,7 @@ const DATA_SOURCES = [
 const CERT_TYPES = [
   { id: 1, code: 'HAL-FOOD',    label: 'Halal Food Certificate',       level: 3, validYears: 2 },
   { id: 2, code: 'HAL-HOTEL',   label: 'Halal Friendly Hotel',         level: 2, validYears: 1 },
-  { id: 3, code: 'MUSLIM-FRND', label: 'Muslim-Friendly Certificate',  level: 1, validYears: 1 },
+  { id: 3, code: 'TRAVEL-FRND', label: 'Traveler-Friendly Certificate', level: 1, validYears: 1 },
   { id: 4, code: 'SHA',         label: 'SHA Safety & Health Standard', level: 2, validYears: 1 },
   { id: 5, code: 'HAL-TOUR',    label: 'Halal Tourism Certificate',    level: 3, validYears: 2 },
 ];
@@ -47,7 +49,7 @@ const CERT_TYPES = [
 const VERIFICATION_LEVELS = [
   { level: 1, name: 'Self-Declared',      description: 'Business self-reports facilities. No third-party verification.',   color: 'text-slate-600',   bg: 'bg-slate-100' },
   { level: 2, name: 'Document Verified',  description: 'Admin reviews uploaded documents. Manual sign-off required.',      color: 'text-amber-700',   bg: 'bg-amber-100' },
-  { level: 3, name: 'Source Certified',   description: 'Linked to official certification body (CICOT/JAKIM/MUIS etc.).',   color: 'text-emerald-700', bg: 'bg-emerald-100' },
+  { level: 3, name: 'Source Certified',   description: 'Linked to the approved certifying source list maintained by the platform.',   color: 'text-emerald-700', bg: 'bg-emerald-100' },
   { level: 4, name: 'Field Inspected',    description: 'Physical on-site inspection completed by certified auditor.',      color: 'text-blue-700',    bg: 'bg-blue-100' },
 ];
 
@@ -59,9 +61,9 @@ const IMPORT_BATCHES = [
 ];
 
 const EXPORT_BATCHES = [
-  { id: 'EXP-2026-06', date: '2026-06-15', requestedBy: 'Ahmad (Approver)', format: 'CSV',  scope: 'All approved places',   records: 1842, status: 'Ready' },
+  { id: 'EXP-2026-06', date: '2026-06-15', requestedBy: 'Ahmad (Place Manager)', format: 'CSV',  scope: 'All approved places',   records: 1842, status: 'Ready' },
   { id: 'EXP-2026-05', date: '2026-05-31', requestedBy: 'Super Admin',      format: 'JSON', scope: 'Cert expiry report',    records: 37,   status: 'Ready' },
-  { id: 'EXP-2026-04', date: '2026-04-20', requestedBy: 'Data Reviewer',    format: 'CSV',  scope: 'Pending review queue',  records: 29,   status: 'Ready' },
+  { id: 'EXP-2026-04', date: '2026-04-20', requestedBy: 'Place Manager',    format: 'CSV',  scope: 'Pending review queue',  records: 29,   status: 'Ready' },
 ];
 
 const DATA_SHARING = [
@@ -269,6 +271,25 @@ export function AdminMasterData({ onNavigate, onLogout }: AdminMasterDataProps) 
 
           {/* Import/Export Batches */}
           <TabsContent value="batches" className="mt-4 space-y-4">
+            {SHOW_SECURITY_PDPA_INDICATORS && (
+              <Card className="border-purple-200 bg-purple-50">
+                <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <LockKeyhole className="size-5 text-purple-700 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-purple-900">Import / Export Governance</p>
+                      <p className="text-sm text-purple-800">
+                        Exports require requester, scope, reason, record count, retention period, and audit trail. Sensitive fields are masked by default.
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => onNavigate?.("security-pdpa")}>
+                    Open Security Controls
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><FileInput className="size-5 text-blue-500" /> Import Batches</CardTitle>
@@ -321,6 +342,7 @@ export function AdminMasterData({ onNavigate, onLogout }: AdminMasterDataProps) 
                       <TableHead>Format</TableHead>
                       <TableHead>Scope</TableHead>
                       <TableHead>Records</TableHead>
+                      {SHOW_SECURITY_PDPA_INDICATORS && <TableHead>Governance</TableHead>}
                       <TableHead className="text-right">Download</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -333,6 +355,13 @@ export function AdminMasterData({ onNavigate, onLogout }: AdminMasterDataProps) 
                         <TableCell><code className="text-xs bg-slate-100 px-1 rounded">{b.format}</code></TableCell>
                         <TableCell className="text-sm text-muted-foreground">{b.scope}</TableCell>
                         <TableCell>{b.records.toLocaleString()}</TableCell>
+                        {SHOW_SECURITY_PDPA_INDICATORS && (
+                          <TableCell>
+                            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                              Reason logged
+                            </Badge>
+                          </TableCell>
+                        )}
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => toast.info(`Downloading ${b.id}`)}>
                             <Download className="size-3 mr-1" /> Download

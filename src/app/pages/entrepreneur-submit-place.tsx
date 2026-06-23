@@ -27,11 +27,13 @@ import {
   Waves,
   Star,
   Hash,
+  LockKeyhole,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PLACE_TYPES, placeTypeLabel } from "../data/place-types";
 import { createSubmittedPlace } from "../data/prototype-place-workflow";
+import { AMENITIES, CERTIFYING_SOURCES } from "../data/prototype-options";
 
 interface EntrepreneurSubmitPlaceProps {
   onNavigate?: (page: string) => void;
@@ -46,12 +48,6 @@ const STEPS = [
   { id: 5, label: 'Certification' },
   { id: 6, label: 'Contact & Media' },
   { id: 7, label: 'Review' },
-];
-
-const AMENITIES = [
-  'Free Wi-Fi', 'Parking', 'Air Conditioning', 'Wheelchair Access',
-  'Children Facilities', 'Outdoor Seating', 'Delivery Available',
-  'Takeaway', 'Dine-in', 'Private Dining Room',
 ];
 
 const MUSLIM_FACILITIES = [
@@ -79,9 +75,15 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
   const [form, setForm] = useState({
     // Basic
     placeName: '',
+    placeNameTh: '',
+    placeNameMs: '',
+    placeNameAr: '',
     placeType: '',
     subCategory: '',
     description: '',
+    descriptionTh: '',
+    descriptionMs: '',
+    descriptionAr: '',
     priceRange: '',
     // Location
     address: '',
@@ -156,9 +158,15 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
     setSubmissionId("");
     setForm({
       placeName: '',
+      placeNameTh: '',
+      placeNameMs: '',
+      placeNameAr: '',
       placeType: '',
       subCategory: '',
       description: '',
+      descriptionTh: '',
+      descriptionMs: '',
+      descriptionAr: '',
       priceRange: '',
       address: '',
       city: '',
@@ -186,11 +194,14 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
   };
 
   const validateSubmission = () => {
+    const hasAnyName = [form.placeName, form.placeNameTh, form.placeNameMs, form.placeNameAr].some((value) => value.trim());
+    const hasAnyDescription = [form.description, form.descriptionTh, form.descriptionMs, form.descriptionAr].some((value) => value.trim().length >= 20);
+    const numericPrice = Number(form.priceRange);
     const checks: { step: number; message: string; pass: boolean }[] = [
-      { step: 1, message: "Place / Business Name is required.", pass: !!form.placeName.trim() },
+      { step: 1, message: "At least one Place / Business Name language is required.", pass: hasAnyName },
       { step: 1, message: "Place Type is required.", pass: !!form.placeType },
-      { step: 1, message: "Price Range is required.", pass: !!form.priceRange },
-      { step: 1, message: "Description is required.", pass: form.description.trim().length >= 20 },
+      { step: 1, message: "Average price in Baht is required.", pass: !!form.priceRange && Number.isFinite(numericPrice) && numericPrice >= 0 },
+      { step: 1, message: "At least one description language must have 20 characters or more.", pass: hasAnyDescription },
       { step: 2, message: "Full Address is required.", pass: !!form.address.trim() },
       { step: 2, message: "City / Province is required.", pass: !!form.city.trim() },
       { step: 2, message: "GPS latitude and longitude are required.", pass: !!form.latitude.trim() && !!form.longitude.trim() },
@@ -198,7 +209,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       { step: 4, message: "Alcohol Policy is required.", pass: !!form.alcoholPolicy },
       { step: 4, message: "Prayer Facility Status is required.", pass: !!form.prayerFacility },
       { step: 5, message: "Certificate Type is required.", pass: !!form.certType },
-      { step: 5, message: "Certifying Agency is required.", pass: !!form.certAgency.trim() },
+      { step: 5, message: "Certifying Source is required.", pass: !!form.certAgency.trim() },
       { step: 5, message: "Certificate Number is required.", pass: !!form.certNumber.trim() },
       { step: 5, message: "Issue Date and Expiry Date are required.", pass: !!form.issueDate && !!form.expiryDate },
       { step: 5, message: "Certificate document upload is required.", pass: !!certDoc },
@@ -218,7 +229,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
   const handleSubmit = () => {
     if (!validateSubmission()) return;
     const submittedPlace = createSubmittedPlace({
-      name: form.placeName.trim(),
+      name: form.placeName.trim() || form.placeNameTh.trim() || form.placeNameMs.trim() || form.placeNameAr.trim(),
       type: placeTypeLabel(form.placeType),
       province: form.city.trim(),
       address: form.address.trim(),
@@ -230,13 +241,13 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       certAgency: form.certAgency.trim(),
       certNumber: form.certNumber.trim(),
       certExpiry: form.expiryDate,
-      priceRange: form.priceRange as "$" | "$$" | "$$$" | "$$$$",
-      amenities: [
+      priceRange: form.priceRange.trim(),
+      amenities: Array.from(new Set([
         ...amenities,
         ...(form.porkPolicy === "No pork served" ? ["No Pork"] : []),
         ...(form.alcoholPolicy === "No alcohol served" ? ["No Alcohol"] : []),
         ...(form.prayerFacility !== "No prayer facility" ? ["Prayer Room"] : []),
-      ],
+      ])),
       porkFree: form.porkPolicy === "No pork served",
       alcoholFree: form.alcoholPolicy === "No alcohol served",
       hasPrayer: form.prayerFacility !== "No prayer facility",
@@ -316,10 +327,33 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
         <CardDescription>Start with your place name, type, description, and price range.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="placeName">Place / Business Name *</Label>
-          <Input id="placeName" placeholder="e.g. Al-Madina Halal Restaurant" value={form.placeName}
-            onChange={e => setForm({...form, placeName: e.target.value})} required />
+        <div className="space-y-3">
+          <div>
+            <Label>Place / Business Name *</Label>
+            <p className="text-xs text-muted-foreground mt-1">Enter at least one language. Other languages are optional.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="placeName" className="text-xs text-muted-foreground">English</Label>
+              <Input id="placeName" placeholder="e.g. Al-Madina Halal Restaurant" value={form.placeName}
+                onChange={e => setForm({...form, placeName: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="placeNameTh" className="text-xs text-muted-foreground">ไทย</Label>
+              <Input id="placeNameTh" placeholder="เช่น ร้านอาหารอัลมาดีนะห์" value={form.placeNameTh}
+                onChange={e => setForm({...form, placeNameTh: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="placeNameMs" className="text-xs text-muted-foreground">Bahasa Melayu</Label>
+              <Input id="placeNameMs" placeholder="cth. Restoran Al-Madina" value={form.placeNameMs}
+                onChange={e => setForm({...form, placeNameMs: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="placeNameAr" className="text-xs text-muted-foreground">العربية</Label>
+              <Input id="placeNameAr" dir="rtl" placeholder="مثال: مطعم المدينة" value={form.placeNameAr}
+                onChange={e => setForm({...form, placeNameAr: e.target.value})} />
+            </div>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -332,31 +366,57 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
               ))}
             </select>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 hidden">
             <Label htmlFor="subCategory">Sub-Category / Cuisine</Label>
-            <Input id="subCategory" placeholder="e.g. Thai, Middle Eastern, Resort" value={form.subCategory}
+            <Input id="subCategory" disabled placeholder="e.g. Thai, Middle Eastern, Resort" value={form.subCategory}
               onChange={e => setForm({...form, subCategory: e.target.value})} />
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="priceRange">Price Range *</Label>
-          <div className="flex gap-3">
-            {['$', '$$', '$$$', '$$$$'].map(p => (
-              <button key={p} type="button"
-                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  form.priceRange === p ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-200 hover:border-emerald-400'
-                }`}
-                onClick={() => setForm({...form, priceRange: p})}>
-                {p}
-              </button>
-            ))}
+          <Label htmlFor="priceRange">Average Price / Budget *</Label>
+          <div className="relative">
+            <DollarSign className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              id="priceRange"
+              type="number"
+              min="0"
+              inputMode="numeric"
+              className="pl-9 pr-16"
+              placeholder="e.g. 250"
+              value={form.priceRange}
+              onChange={e => setForm({...form, priceRange: e.target.value})}
+            />
+            <span className="absolute right-3 top-2.5 text-sm text-muted-foreground">Baht</span>
           </div>
-          <p className="text-xs text-muted-foreground">$ = Budget &nbsp;|&nbsp; $$ = Mid-range &nbsp;|&nbsp; $$$ = Upscale &nbsp;|&nbsp; $$$$ = Fine Dining</p>
+          <p className="text-xs text-muted-foreground">Enter an estimated average price or budget in Thai Baht.</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="description">Description *</Label>
-          <Textarea id="description" placeholder="Describe your place, services, and what makes it special for Muslim travelers..."
-            rows={4} value={form.description} onChange={e => setForm({...form, description: e.target.value})} required />
+        <div className="space-y-3">
+          <div>
+            <Label>Description *</Label>
+            <p className="text-xs text-muted-foreground mt-1">Enter at least one language with 20 characters or more. Other languages are optional.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="description" className="text-xs text-muted-foreground">English</Label>
+              <Textarea id="description" placeholder="Describe your place, services, and what makes it special for Muslim travelers..."
+                rows={4} value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="descriptionTh" className="text-xs text-muted-foreground">ไทย</Label>
+              <Textarea id="descriptionTh" placeholder="อธิบายสถานที่ บริการ และสิ่งอำนวยความสะดวกสำหรับนักท่องเที่ยวมุสลิม"
+                rows={4} value={form.descriptionTh} onChange={e => setForm({...form, descriptionTh: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="descriptionMs" className="text-xs text-muted-foreground">Bahasa Melayu</Label>
+              <Textarea id="descriptionMs" placeholder="Terangkan tempat, perkhidmatan, dan kemudahan untuk pelancong Muslim"
+                rows={4} value={form.descriptionMs} onChange={e => setForm({...form, descriptionMs: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="descriptionAr" className="text-xs text-muted-foreground">العربية</Label>
+              <Textarea id="descriptionAr" dir="rtl" placeholder="صف المكان والخدمات والمرافق المناسبة للمسافرين المسلمين"
+                rows={4} value={form.descriptionAr} onChange={e => setForm({...form, descriptionAr: e.target.value})} />
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -456,7 +516,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
   const renderStep4 = () => (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Waves className="size-5 text-emerald-600" /> Muslim-Friendly Facilities</CardTitle>
+        <CardTitle className="flex items-center gap-2"><Waves className="size-5 text-emerald-600" /> Halal-Friendly Facilities</CardTitle>
         <CardDescription>Accurately declare your halal policy and prayer facilities.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -503,7 +563,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
         </div>
 
         <div className="border-t pt-5">
-          <Label className="font-semibold mb-3 block">Additional Muslim-Friendly Features</Label>
+          <Label className="font-semibold mb-3 block">Additional Halal-Friendly Features</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {MUSLIM_FACILITIES.map(f => (
               <div key={f.id} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
@@ -534,16 +594,21 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
               <option value="">Select type</option>
               <option value="halal-food">Halal Food Certificate</option>
               <option value="halal-hotel">Halal Friendly Hotel</option>
-              <option value="muslim-friendly">Muslim-Friendly Certificate</option>
+              <option value="traveler-friendly">Traveler-Friendly Certificate</option>
               <option value="sha">SHA Safety Standard</option>
               <option value="halal-tourism">Halal Tourism Certificate</option>
               <option value="other">Other Certification</option>
             </select>
           </div>
           <div className="space-y-2">
-            <Label>Certifying Agency *</Label>
-            <Input placeholder="e.g. Central Islamic Council of Thailand" value={form.certAgency}
-              onChange={e => setForm({...form, certAgency: e.target.value})} />
+            <Label>Certifying Source *</Label>
+            <select className="w-full border rounded-md px-3 py-2 bg-background text-sm"
+              value={form.certAgency} onChange={e => setForm({...form, certAgency: e.target.value})}>
+              <option value="">Select certifying source</option>
+              {CERTIFYING_SOURCES.map(source => (
+                <option key={source} value={source}>{source}</option>
+              ))}
+            </select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="certNumber">Certificate Number *</Label>
@@ -576,6 +641,14 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
 
         <div className="border-t pt-5 space-y-3">
           <Label className="font-semibold">Upload Certificate Document *</Label>
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-3 flex items-start gap-2">
+              <LockKeyhole className="size-4 text-blue-700 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-800">
+                Your certificate file is treated as protected data. It is stored in restricted document storage, reviewed only by authorized admins, and access is recorded in the audit log.
+              </p>
+            </CardContent>
+          </Card>
           <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:bg-slate-50 transition-colors relative ${
             certDoc ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300'
           }`}>
@@ -657,6 +730,15 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
           </div>
         </div>
 
+        <Card className="border-emerald-200 bg-emerald-50">
+          <CardContent className="p-3 flex items-start gap-2">
+            <LockKeyhole className="size-4 text-emerald-700 mt-0.5 shrink-0" />
+            <p className="text-xs text-emerald-800">
+              Contact information is used for verification and traveler support only. It may be masked in exports and handled under the platform privacy and PDPA governance workflow.
+            </p>
+          </CardContent>
+        </Card>
+
         <div className="border-t pt-5 space-y-3">
           <Label className="font-semibold flex items-center gap-2"><ImageIcon className="size-4" /> Photos *</Label>
           <p className="text-xs text-muted-foreground">Upload at least 3 photos. Max 5MB each, JPG/PNG only.</p>
@@ -694,9 +776,9 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       <CardContent className="space-y-6">
         {/* Summary rows */}
         {[
-          { label: 'Place Name', value: form.placeName || '—' },
+          { label: 'Place Name', value: form.placeName || form.placeNameTh || form.placeNameMs || form.placeNameAr || '—' },
           { label: 'Type', value: form.placeType ? placeTypeLabel(form.placeType) : '—' },
-          { label: 'Price Range', value: form.priceRange || '—' },
+          { label: 'Average Price', value: form.priceRange ? `${form.priceRange} Baht` : '—' },
           { label: 'Address', value: form.address ? `${form.address}, ${form.city}` : '—' },
           { label: 'GPS', value: form.latitude && form.longitude ? `${form.latitude}, ${form.longitude}` : '—' },
           { label: 'Hours', value: `${form.openTime} – ${form.closeTime}${form.openDaily ? ', Daily' : ''}` },
@@ -706,7 +788,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
           { label: 'Amenities', value: amenities.length ? amenities.join(', ') : 'None selected' },
           { label: 'Muslim Facilities', value: muslimFacilities.length ? muslimFacilities.join(', ') : 'None selected' },
           { label: 'Certificate Type', value: form.certType || '—' },
-          { label: 'Certifying Agency', value: form.certAgency || '—' },
+          { label: 'Certifying Source', value: form.certAgency || '—' },
           { label: 'Certificate #', value: form.certNumber || '—' },
           { label: 'Validity', value: form.issueDate && form.expiryDate ? `${form.issueDate} → ${form.expiryDate}` : '—' },
           { label: 'Certificate Doc', value: certDoc ? certDoc.name : '—' },
@@ -725,7 +807,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
             <div>
               <p className="font-semibold text-amber-800 text-sm">Important Declaration</p>
               <p className="text-xs text-amber-700 mt-1">
-                By submitting, you confirm that all information provided is accurate and your documents are valid. Providing false information may result in permanent account suspension.
+                By submitting, you confirm that all information provided is accurate and your documents are valid. Providing false information may result in permanent account suspension. You also acknowledge that the platform will process your business contact details and certification documents for verification, audit, and listing governance.
               </p>
             </div>
           </CardContent>

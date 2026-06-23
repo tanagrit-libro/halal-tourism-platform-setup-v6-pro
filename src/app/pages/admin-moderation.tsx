@@ -23,6 +23,7 @@ import {
   usePrototypePlaces,
 } from "../data/prototype-place-workflow";
 import { addAuditEvent } from "../data/prototype-audit-workflow";
+import { CERTIFYING_SOURCES } from "../data/prototype-options";
 
 interface AdminModerationProps {
   onNavigate?: (page: string) => void;
@@ -56,40 +57,40 @@ const INITIAL_PLACES: PlaceItem[] = [
     id: '1', name: 'Nusantara Halal Restaurant', category: 'Restaurant',
     submittedBy: 'Ahmad Siddiqui', submittedDate: '2026-06-15', location: 'Silom, Bangkok',
     image: 'https://images.unsplash.com/photo-1600555379885-08a02224726d?w=400',
-    status: 'Pending', trustStatus: 'certified', certAgency: 'CICOT', certNumber: 'CICOT-2024-1187',
+    status: 'Pending', trustStatus: 'certified', certAgency: CERTIFYING_SOURCES[0], certNumber: 'CICOT-2024-1187',
     certExpiry: '2027-01-14', autoValidationScore: 91, autoValidationFlags: [],
-    isPublished: false, isAutoHidden: false, documentsMissing: [], notes: '', expanded: false,
+    isPublished: false, isAutoHidden: false, documentsMissing: [], notes: 'Ready for Place Manager approval.', expanded: false,
   },
   {
     id: '2', name: 'Madinah Boutique Hotel', category: 'Hotel',
     submittedBy: 'Fatimah Yusof', submittedDate: '2026-06-14', location: 'Patong, Phuket',
     image: 'https://images.unsplash.com/photo-1766856925165-94997a2104b4?w=400',
-    status: 'Reviewed', trustStatus: 'source-verified', certAgency: 'TAT Dataset', certNumber: '—',
-    certExpiry: '—', autoValidationScore: 78, autoValidationFlags: ['Certificate copy low resolution'],
-    isPublished: false, isAutoHidden: false, documentsMissing: ['High-res certificate scan'], notes: '', expanded: false,
+    status: 'Reviewed', trustStatus: 'source-verified', certAgency: CERTIFYING_SOURCES[3], certNumber: 'Pending high-res scan',
+    certExpiry: 'Pending high-res scan', autoValidationScore: 78, autoValidationFlags: ['Certificate copy low resolution'],
+    isPublished: false, isAutoHidden: false, documentsMissing: ['High-res certificate scan'], notes: 'High-resolution source document required before publication.', expanded: false,
   },
   {
     id: '3', name: 'Halal Street Food Stall', category: 'Restaurant',
     submittedBy: 'Sulaiman Wirawan', submittedDate: '2026-06-12', location: 'Nimmanhaemin, Chiang Mai',
     image: 'https://images.unsplash.com/photo-1607411144164-97857cf86e1a?w=400',
-    status: 'Returned for Correction', trustStatus: 'pending', certAgency: '—', certNumber: '—',
-    certExpiry: '—', autoValidationScore: 42, autoValidationFlags: ['No certifying agency', 'Missing certificate number', 'Address incomplete'],
-    isPublished: false, isAutoHidden: false, documentsMissing: ['Certification document', 'Business registration'], notes: 'Please upload official certification from CICOT or HALA Thailand.', expanded: false,
+    status: 'Returned for Correction', trustStatus: 'pending', certAgency: 'Pending certifying source', certNumber: 'Pending certificate number',
+    certExpiry: 'Pending certificate expiry', autoValidationScore: 42, autoValidationFlags: ['No certifying agency', 'Missing certificate number', 'Address incomplete'],
+    isPublished: false, isAutoHidden: false, documentsMissing: ['Certification document', 'Business registration'], notes: 'Please upload official certification from an approved certifying source.', expanded: false,
   },
   {
     id: '4', name: 'Grand Central Mosque Prayer Room', category: 'Mosque',
     submittedBy: 'Platform Admin', submittedDate: '2026-05-20', location: 'Hat Yai, Songkhla',
     image: 'https://images.unsplash.com/photo-1645334633515-4adec58e546a?w=400',
-    status: 'Approved', trustStatus: 'certified', certAgency: 'CICOT', certNumber: 'CICOT-2023-0441',
+    status: 'Approved', trustStatus: 'certified', certAgency: CERTIFYING_SOURCES[0], certNumber: 'CICOT-2023-0441',
     certExpiry: '2025-12-31', autoValidationScore: 97, autoValidationFlags: ['Certificate expired 14 Jan 2026'],
-    isPublished: true, isAutoHidden: false, documentsMissing: [], notes: '', expanded: false,
+    isPublished: true, isAutoHidden: false, documentsMissing: [], notes: 'Published with expired certificate flag for re-verification.', expanded: false,
   },
   {
     id: '5', name: 'Rayong Seafood Corner', category: 'Restaurant',
     submittedBy: 'Priya Nair', submittedDate: '2026-06-10', location: 'Mueang, Rayong',
     image: 'https://images.unsplash.com/photo-1769265114898-083ad50197f4?w=400',
-    status: 'Rejected', trustStatus: 'owner-submitted', certAgency: '—', certNumber: '—',
-    certExpiry: '—', autoValidationScore: 18, autoValidationFlags: ['Duplicate submission', 'Conflicting address data', 'No halal evidence'],
+    status: 'Rejected', trustStatus: 'owner-submitted', certAgency: 'Rejected before source verification', certNumber: 'Rejected before certificate validation',
+    certExpiry: 'Rejected before expiry validation', autoValidationScore: 18, autoValidationFlags: ['Duplicate submission', 'Conflicting address data', 'No halal evidence'],
     isPublished: false, isAutoHidden: true, documentsMissing: ['All required documents'], notes: 'Rejected: duplicate submission with conflicting data. Owner may resubmit with full documentation.', expanded: false,
   },
 ];
@@ -125,9 +126,9 @@ function toPlaceItem(place: PrototypePlaceRecord, expanded: boolean): PlaceItem 
     image: place.image,
     status: toModerationStatus(place.status),
     trustStatus: statusToTrustStatus(place),
-    certAgency: place.certAgency || "—",
-    certNumber: place.certNumber || "—",
-    certExpiry: place.certExpiry || "—",
+    certAgency: place.certAgency || "Pending certifying source",
+    certNumber: place.certNumber || "Pending certificate number",
+    certExpiry: place.certExpiry || "Pending certificate expiry",
     autoValidationScore: Math.min(100, Math.max(20, 55 + place.images * 8 + (place.certAgency ? 15 : 0))),
     autoValidationFlags: [
       ...(place.images < 3 ? ["Image completeness below minimum"] : []),
@@ -167,9 +168,9 @@ function buildValidationChecks(place: PlaceItem): ValidationCheck[] {
   const hasPhone = !place.documentsMissing.some(d => d.toLowerCase().includes('phone'));
   const hasWebsite = true; // assume present unless flagged
   const hasCoords = !place.autoValidationFlags.some(f => f.toLowerCase().includes('address'));
-  const hasCertAgency = !!place.certAgency && place.certAgency !== '—';
-  const hasCertNumber = !!place.certNumber && place.certNumber !== '—';
-  const hasExpiry = !!place.certExpiry && place.certExpiry !== '—';
+  const hasCertAgency = !!place.certAgency && !place.certAgency.toLowerCase().includes('pending') && !place.certAgency.toLowerCase().includes('rejected');
+  const hasCertNumber = !!place.certNumber && !place.certNumber.toLowerCase().includes('pending') && !place.certNumber.toLowerCase().includes('rejected');
+  const hasExpiry = !!place.certExpiry && !place.certExpiry.toLowerCase().includes('pending') && !place.certExpiry.toLowerCase().includes('rejected');
   const expiryValid = hasExpiry && place.certExpiry >= '2026-06-18';
   const hasImages = !place.documentsMissing.some(d => d.toLowerCase().includes('image') || d.toLowerCase().includes('photo'));
   const hasDocs = place.documentsMissing.length === 0;
@@ -355,7 +356,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Expiry</p>
-                  <p className={`text-xs font-medium ${place.certExpiry < '2026-06-16' && place.certExpiry !== '—' ? 'text-red-600' : ''}`}>
+                  <p className={`text-xs font-medium ${place.certExpiry < '2026-06-16' && !place.certExpiry.toLowerCase().includes('pending') && !place.certExpiry.toLowerCase().includes('rejected') ? 'text-red-600' : ''}`}>
                     {place.certExpiry}
                   </p>
                 </div>
@@ -575,7 +576,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
           <p className="text-xs text-blue-800 leading-relaxed">
             <strong>Source Governance:</strong> Auto-validation checks certificate number format, agency match,
             expiry date, and address completeness. Score ≥ 80 = recommended for fast-track approval.
-            Certificate authority decisions remain with CICOT / HALA Thailand / TAT — this platform records and displays status only.
+            Certificate authority decisions remain with the approved certifying source — this platform records and displays status only.
           </p>
         </div>
 

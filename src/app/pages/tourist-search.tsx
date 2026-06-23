@@ -28,6 +28,7 @@ import {
   statusToTrustStatus,
   usePrototypePlaces,
 } from "../data/prototype-place-workflow";
+import { AMENITIES, CERTIFYING_SOURCES } from "../data/prototype-options";
 import {
   Search,
   SlidersHorizontal,
@@ -56,7 +57,7 @@ interface Place {
   trustStatus: TrustStatus;
   agency: string;
   source: string;
-  priceRange: "$" | "$$" | "$$$" | "$$$$";
+  priceRange: string;
   amenities: string[];
   openNow: boolean;
   porkFree: boolean;
@@ -107,51 +108,51 @@ function imgFor(category: string, name: string): string {
 
 const RAW_PLACES: Omit<Place, "image">[] = [
   // Bangkok / Ayutthaya
-  { id: "1", name: "Yana Restaurant", category: "Restaurant", province: "Bangkok", location: "Silom, Bangkok", rating: 4.6, reviews: 318, trustStatus: "certified", agency: "CICOT", source: "CICOT", priceRange: "$$", amenities: ["Prayer Room", "No Pork", "WiFi"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
-  { id: "2", name: "Shangri-La Bangkok", category: "Hotel", province: "Bangkok", location: "Charoen Krung Rd, Bangkok", rating: 4.9, reviews: 1024, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$$$", amenities: ["Prayer Room", "Halal Kitchen", "WiFi"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
-  { id: "3", name: "Ayutthaya Historical Park", category: "Attraction", province: "Ayutthaya", location: "Phra Nakhon Si Ayutthaya", rating: 4.8, reviews: 2415, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "4", name: "Al-Hussain Restaurant", category: "Restaurant", province: "Bangkok", location: "Bang Rak, Bangkok", rating: 4.2, reviews: 187, trustStatus: "certified", agency: "CICOT", source: "CICOT", priceRange: "$", amenities: ["No Pork", "No Alcohol", "Wudu Facility"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: true },
-  { id: "5", name: "Mandarin Oriental Bangkok", category: "Hotel", province: "Bangkok", location: "Charoen Krung Rd, Bangkok", rating: 5.0, reviews: 876, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$$$", amenities: ["Prayer Room", "WiFi", "Family Section"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
+  { id: "1", name: "Yana Restaurant", category: "Restaurant", province: "Bangkok", location: "Silom, Bangkok", rating: 4.6, reviews: 318, trustStatus: "certified", agency: CERTIFYING_SOURCES[0], source: CERTIFYING_SOURCES[0], priceRange: "350", amenities: ["Prayer Room", "No Pork", "WiFi"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
+  { id: "2", name: "Shangri-La Bangkok", category: "Hotel", province: "Bangkok", location: "Charoen Krung Rd, Bangkok", rating: 4.9, reviews: 1024, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "6500", amenities: ["Prayer Room", "Halal Kitchen", "WiFi"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
+  { id: "3", name: "Ayutthaya Historical Park", category: "Attraction", province: "Ayutthaya", location: "Phra Nakhon Si Ayutthaya", rating: 4.8, reviews: 2415, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "100", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "4", name: "Al-Hussain Restaurant", category: "Restaurant", province: "Bangkok", location: "Bang Rak, Bangkok", rating: 4.2, reviews: 187, trustStatus: "certified", agency: CERTIFYING_SOURCES[0], source: CERTIFYING_SOURCES[0], priceRange: "180", amenities: ["No Pork", "No Alcohol", "Wudu Facility"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: true },
+  { id: "5", name: "Mandarin Oriental Bangkok", category: "Hotel", province: "Bangkok", location: "Charoen Krung Rd, Bangkok", rating: 5.0, reviews: 876, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "8500", amenities: ["Prayer Room", "WiFi", "Family Section"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
 
   // Chiang Mai / Chiang Rai
-  { id: "6", name: "Shangri-La Chiang Mai", category: "Hotel", province: "Chiang Mai", location: "Chang Klan Rd, Chiang Mai", rating: 4.7, reviews: 654, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$$", amenities: ["Prayer Room", "WiFi"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
-  { id: "7", name: "Chiang Mai Central Mosque", category: "Mosque", province: "Chiang Mai", location: "Charoen Prathet, Chiang Mai", rating: 5.0, reviews: 412, trustStatus: "certified", agency: "CICOT", source: "CICOT", priceRange: "$", amenities: ["Prayer Room", "Wudu Facility", "Qibla Marked"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
-  { id: "8", name: "Wat Rong Khun (White Temple)", category: "Attraction", province: "Chiang Rai", location: "Pa O Don Chai, Chiang Rai", rating: 4.8, reviews: 3201, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "9", name: "Doi Inthanon National Park", category: "Attraction", province: "Chiang Mai", location: "Chom Thong, Chiang Mai", rating: 4.8, reviews: 1892, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "6", name: "Shangri-La Chiang Mai", category: "Hotel", province: "Chiang Mai", location: "Chang Klan Rd, Chiang Mai", rating: 4.7, reviews: 654, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "4200", amenities: ["Prayer Room", "WiFi"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
+  { id: "7", name: "Chiang Mai Central Mosque", category: "Mosque", province: "Chiang Mai", location: "Charoen Prathet, Chiang Mai", rating: 5.0, reviews: 412, trustStatus: "certified", agency: CERTIFYING_SOURCES[0], source: CERTIFYING_SOURCES[0], priceRange: "0", amenities: ["Prayer Room", "Wudu Facility", "Qibla Direction"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
+  { id: "8", name: "Wat Rong Khun (White Temple)", category: "Attraction", province: "Chiang Rai", location: "Pa O Don Chai, Chiang Rai", rating: 4.8, reviews: 3201, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "100", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "9", name: "Doi Inthanon National Park", category: "Attraction", province: "Chiang Mai", location: "Chom Thong, Chiang Mai", rating: 4.8, reviews: 1892, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "300", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
 
   // Phuket / Phang Nga
-  { id: "10", name: "JW Marriott Phuket Resort", category: "Hotel", province: "Phuket", location: "Mai Khao, Phuket", rating: 4.8, reviews: 1102, trustStatus: "certified", agency: "HALA Thailand", source: "HALA Thailand", priceRange: "$$$$", amenities: ["Prayer Room", "Halal Kitchen", "WiFi"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
-  { id: "11", name: "Sri Panwa Phuket", category: "Hotel", province: "Phuket", location: "Cape Panwa, Phuket", rating: 4.8, reviews: 789, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$$$", amenities: ["WiFi", "Prayer Room"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: true },
-  { id: "12", name: "James Bond Island", category: "Attraction", province: "Phang Nga", location: "Ao Phang Nga, Phang Nga", rating: 4.7, reviews: 2876, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "13", name: "Similan Islands", category: "Attraction", province: "Phang Nga", location: "Similan Islands, Phang Nga", rating: 4.9, reviews: 1543, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "10", name: "JW Marriott Phuket Resort", category: "Hotel", province: "Phuket", location: "Mai Khao, Phuket", rating: 4.8, reviews: 1102, trustStatus: "certified", agency: CERTIFYING_SOURCES[1], source: CERTIFYING_SOURCES[1], priceRange: "7800", amenities: ["Prayer Room", "Halal Kitchen", "WiFi"], openNow: true, porkFree: true, alcoholFree: false, hasPrayer: true },
+  { id: "11", name: "Sri Panwa Phuket", category: "Hotel", province: "Phuket", location: "Cape Panwa, Phuket", rating: 4.8, reviews: 789, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "12000", amenities: ["WiFi", "Prayer Room"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: true },
+  { id: "12", name: "James Bond Island", category: "Attraction", province: "Phang Nga", location: "Ao Phang Nga, Phang Nga", rating: 4.7, reviews: 2876, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "1200", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "13", name: "Similan Islands", category: "Attraction", province: "Phang Nga", location: "Similan Islands, Phang Nga", rating: 4.9, reviews: 1543, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "2500", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
 
   // Krabi / Trang
-  { id: "14", name: "Phi Phi Islands", category: "Attraction", province: "Krabi", location: "Ko Phi Phi, Krabi", rating: 4.9, reviews: 4102, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "15", name: "Railay Beach", category: "Attraction", province: "Krabi", location: "Railay, Krabi", rating: 4.8, reviews: 2931, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "16", name: "Trang Halal Seafood", category: "Restaurant", province: "Trang", location: "Mueang Trang", rating: 4.5, reviews: 143, trustStatus: "pending", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork", "No Alcohol"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
-  { id: "17", name: "Maya Bay", category: "Attraction", province: "Krabi", location: "Ko Phi Phi Le, Krabi", rating: 4.9, reviews: 3654, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "14", name: "Phi Phi Islands", category: "Attraction", province: "Krabi", location: "Ko Phi Phi, Krabi", rating: 4.9, reviews: 4102, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "900", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "15", name: "Railay Beach", category: "Attraction", province: "Krabi", location: "Railay, Krabi", rating: 4.8, reviews: 2931, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "200", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "16", name: "Trang Halal Seafood", category: "Restaurant", province: "Trang", location: "Mueang Trang", rating: 4.5, reviews: 143, trustStatus: "pending", agency: CERTIFYING_SOURCES[2], source: CERTIFYING_SOURCES[2], priceRange: "220", amenities: ["No Pork", "No Alcohol"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "17", name: "Maya Bay", category: "Attraction", province: "Krabi", location: "Ko Phi Phi Le, Krabi", rating: 4.9, reviews: 3654, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "400", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
 
   // Songkhla / Satun / Phatthalung
-  { id: "18", name: "Hat Yai Grand Central Mosque", category: "Mosque", province: "Songkhla", location: "Hat Yai, Songkhla", rating: 4.8, reviews: 567, trustStatus: "certified", agency: "CICOT", source: "CICOT", priceRange: "$", amenities: ["Prayer Room", "Wudu Facility"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
-  { id: "19", name: "Satun Tarutao Marine Park", category: "Attraction", province: "Satun", location: "Ko Tarutao, Satun", rating: 4.9, reviews: 987, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "20", name: "Phatthalung Muslim Kitchen", category: "Restaurant", province: "Phatthalung", location: "Mueang Phatthalung", rating: 4.3, reviews: 89, trustStatus: "owner-submitted", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: false },
-  { id: "21", name: "Hat Yai Night Market (Halal Zone)", category: "Restaurant", province: "Songkhla", location: "Hat Yai, Songkhla", rating: 4.5, reviews: 321, trustStatus: "pending", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "18", name: "Hat Yai Grand Central Mosque", category: "Mosque", province: "Songkhla", location: "Hat Yai, Songkhla", rating: 4.8, reviews: 567, trustStatus: "certified", agency: CERTIFYING_SOURCES[0], source: CERTIFYING_SOURCES[0], priceRange: "0", amenities: ["Prayer Room", "Wudu Facility"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
+  { id: "19", name: "Satun Tarutao Marine Park", category: "Attraction", province: "Satun", location: "Ko Tarutao, Satun", rating: 4.9, reviews: 987, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "200", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "20", name: "Phatthalung Muslim Kitchen", category: "Restaurant", province: "Phatthalung", location: "Mueang Phatthalung", rating: 4.3, reviews: 89, trustStatus: "owner-submitted", agency: CERTIFYING_SOURCES[4], source: CERTIFYING_SOURCES[4], priceRange: "150", amenities: ["No Pork"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "21", name: "Hat Yai Night Market (Halal Zone)", category: "Restaurant", province: "Songkhla", location: "Hat Yai, Songkhla", rating: 4.5, reviews: 321, trustStatus: "pending", agency: CERTIFYING_SOURCES[4], source: CERTIFYING_SOURCES[4], priceRange: "120", amenities: ["No Pork"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
 
   // Surat Thani / Nakhon Si Thammarat
-  { id: "22", name: "Khao Sok National Park", category: "Attraction", province: "Surat Thani", location: "Surat Thani", rating: 4.9, reviews: 1765, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "23", name: "Koh Samui Muslim Restaurant", category: "Restaurant", province: "Surat Thani", location: "Ko Samui, Surat Thani", rating: 4.4, reviews: 112, trustStatus: "owner-submitted", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork", "No Alcohol"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
-  { id: "24", name: "Nakhon Si Muslim Bistro", category: "Restaurant", province: "Nakhon Si Thammarat", location: "Mueang Nakhon Si Thammarat", rating: 4.2, reviews: 74, trustStatus: "pending", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "22", name: "Khao Sok National Park", category: "Attraction", province: "Surat Thani", location: "Surat Thani", rating: 4.9, reviews: 1765, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "300", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "23", name: "Koh Samui Muslim Restaurant", category: "Restaurant", province: "Surat Thani", location: "Ko Samui, Surat Thani", rating: 4.4, reviews: 112, trustStatus: "owner-submitted", agency: CERTIFYING_SOURCES[4], source: CERTIFYING_SOURCES[4], priceRange: "240", amenities: ["No Pork", "No Alcohol"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "24", name: "Nakhon Si Muslim Bistro", category: "Restaurant", province: "Nakhon Si Thammarat", location: "Mueang Nakhon Si Thammarat", rating: 4.2, reviews: 74, trustStatus: "pending", agency: CERTIFYING_SOURCES[4], source: CERTIFYING_SOURCES[4], priceRange: "160", amenities: ["No Pork"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: false },
 
   // Narathiwat / Yala / Pattani
-  { id: "25", name: "Pattani Central Mosque", category: "Mosque", province: "Pattani", location: "Mueang Pattani", rating: 4.9, reviews: 834, trustStatus: "certified", agency: "CICOT", source: "CICOT", priceRange: "$", amenities: ["Prayer Room", "Wudu Facility", "Qibla Marked"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
-  { id: "26", name: "Narathiwat Seafood", category: "Restaurant", province: "Narathiwat", location: "Mueang Narathiwat", rating: 4.5, reviews: 201, trustStatus: "certified", agency: "CICOT", source: "CICOT", priceRange: "$", amenities: ["No Pork", "No Alcohol", "Prayer Room"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
-  { id: "27", name: "Yala Night Market", category: "Restaurant", province: "Yala", location: "Mueang Yala", rating: 4.4, reviews: 156, trustStatus: "owner-submitted", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
-  { id: "28", name: "Takbai Riverside", category: "Attraction", province: "Narathiwat", location: "Takbai, Narathiwat", rating: 4.6, reviews: 298, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "25", name: "Pattani Central Mosque", category: "Mosque", province: "Pattani", location: "Mueang Pattani", rating: 4.9, reviews: 834, trustStatus: "certified", agency: CERTIFYING_SOURCES[0], source: CERTIFYING_SOURCES[0], priceRange: "0", amenities: ["Prayer Room", "Wudu Facility", "Qibla Direction"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
+  { id: "26", name: "Narathiwat Seafood", category: "Restaurant", province: "Narathiwat", location: "Mueang Narathiwat", rating: 4.5, reviews: 201, trustStatus: "certified", agency: CERTIFYING_SOURCES[0], source: CERTIFYING_SOURCES[0], priceRange: "260", amenities: ["No Pork", "No Alcohol", "Prayer Room"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: true },
+  { id: "27", name: "Yala Night Market", category: "Restaurant", province: "Yala", location: "Mueang Yala", rating: 4.4, reviews: 156, trustStatus: "owner-submitted", agency: CERTIFYING_SOURCES[4], source: CERTIFYING_SOURCES[4], priceRange: "120", amenities: ["No Pork"], openNow: true, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "28", name: "Takbai Riverside", category: "Attraction", province: "Narathiwat", location: "Takbai, Narathiwat", rating: 4.6, reviews: 298, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "80", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
 
   // Chonburi / Rayong
-  { id: "29", name: "Sanctuary of Truth", category: "Attraction", province: "Chonburi", location: "Pattaya, Chonburi", rating: 4.7, reviews: 2109, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "30", name: "Nong Nooch Tropical Garden", category: "Attraction", province: "Chonburi", location: "Sattahip, Chonburi", rating: 4.6, reviews: 1432, trustStatus: "source-verified", agency: "", source: "TAT Dataset", priceRange: "$$", amenities: [], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
-  { id: "31", name: "Rayong Halal Seafood", category: "Restaurant", province: "Rayong", location: "Mueang Rayong", rating: 4.3, reviews: 98, trustStatus: "pending", agency: "", source: "Owner Submitted", priceRange: "$", amenities: ["No Pork"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: false },
+  { id: "29", name: "Sanctuary of Truth", category: "Attraction", province: "Chonburi", location: "Pattaya, Chonburi", rating: 4.7, reviews: 2109, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "500", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "30", name: "Nong Nooch Tropical Garden", category: "Attraction", province: "Chonburi", location: "Sattahip, Chonburi", rating: 4.6, reviews: 1432, trustStatus: "source-verified", agency: CERTIFYING_SOURCES[3], source: CERTIFYING_SOURCES[3], priceRange: "600", amenities: ["Family Section", "Parking"], openNow: true, porkFree: false, alcoholFree: false, hasPrayer: false },
+  { id: "31", name: "Rayong Halal Seafood", category: "Restaurant", province: "Rayong", location: "Mueang Rayong", rating: 4.3, reviews: 98, trustStatus: "pending", agency: CERTIFYING_SOURCES[4], source: CERTIFYING_SOURCES[4], priceRange: "220", amenities: ["No Pork"], openNow: false, porkFree: true, alcoholFree: true, hasPrayer: false },
 ];
 
 const BASE_PLACES: Place[] = RAW_PLACES.map((p) => ({
@@ -206,23 +207,14 @@ const ALL_THAI_PROVINCES = [
 const OPENING_HOURS_OPTS = [
   "Open Now", "Open 24h", "Open on Fridays", "Late Night (after 21:00)",
 ];
-const CERT_SOURCES = [
-  "CICOT", "HALA Thailand", "Jakim (Malaysia)", "Self-declared",
-  "TAT Partner Dataset", "Owner Submitted",
+const CERT_SOURCES = CERTIFYING_SOURCES;
+const AMENITIES_LIST = AMENITIES;
+const PRICE_RANGES = [
+  { label: "0-250 Baht", min: 0, max: 250 },
+  { label: "251-500 Baht", min: 251, max: 500 },
+  { label: "501-1,500 Baht", min: 501, max: 1500 },
+  { label: "1,501+ Baht", min: 1501, max: Infinity },
 ];
-const CERT_STATUSES: { label: string; value: TrustStatus; dot: string }[] = [
-  { label: "Certified ✓", value: "certified", dot: "bg-emerald-500" },
-  { label: "Source-Verified", value: "source-verified", dot: "bg-blue-500" },
-  { label: "Pending", value: "pending", dot: "bg-amber-500" },
-  { label: "Expired", value: "expired", dot: "bg-red-500" },
-  { label: "Owner Submitted", value: "owner-submitted", dot: "bg-gray-400" },
-];
-const AMENITIES_LIST = [
-  "Prayer Room", "Wudu Facility", "Qibla Direction", "Halal Kitchen",
-  "No Pork", "No Alcohol", "Family Section", "Women-Only Section",
-  "Wheelchair Access", "Parking", "WiFi",
-];
-const PRICE_RANGES = ["$", "$$", "$$$", "$$$$"];
 const SORT_OPTIONS = ["Highest Rating", "Most Reviews", "Name A-Z", "Newest"];
 
 // ─── Province Select ──────────────────────────────────────────────────────────
@@ -396,7 +388,6 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
   const [distance, setDistance] = useState([50]);
   const [openingHours, setOpeningHours] = useState<string[]>([]);
   const [certSources, setCertSources] = useState<string[]>([]);
-  const [certStatus, setCertStatus] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<string[]>([]);
   const [porkFreeOnly, setPorkFreeOnly] = useState(false);
@@ -432,8 +423,6 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
       result = result.filter((p) => selectedTypes.includes(p.category));
     if (selectedProvince !== "All Provinces")
       result = result.filter((p) => p.province === selectedProvince);
-    if (certStatus.length > 0)
-      result = result.filter((p) => certStatus.includes(p.trustStatus));
     if (certSources.length > 0)
       result = result.filter((p) =>
         certSources.some((s) => p.source.includes(s) || p.agency.includes(s))
@@ -443,7 +432,12 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
         selectedAmenities.every((a) => p.amenities.includes(a))
       );
     if (priceRange.length > 0)
-      result = result.filter((p) => priceRange.includes(p.priceRange));
+      result = result.filter((p) => {
+        const value = Number(p.priceRange);
+        return Number.isFinite(value) && PRICE_RANGES.some((range) =>
+          priceRange.includes(range.label) && value >= range.min && value <= range.max
+        );
+      });
     if (porkFreeOnly) result = result.filter((p) => p.porkFree);
     if (alcoholFreeOnly) result = result.filter((p) => p.alcoholFree);
     if (hasPrayerOnly) result = result.filter((p) => p.hasPrayer);
@@ -458,7 +452,7 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
       return [...result].sort((a, b) => a.name.localeCompare(b.name));
     return result;
   }, [
-    allPlaces, searchQuery, selectedTypes, selectedProvince, certStatus, certSources,
+    allPlaces, searchQuery, selectedTypes, selectedProvince, certSources,
     selectedAmenities, priceRange, porkFreeOnly, alcoholFreeOnly,
     hasPrayerOnly, openingHours, sortBy,
   ]);
@@ -470,7 +464,6 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
     setDistance([50]);
     setOpeningHours([]);
     setCertSources([]);
-    setCertStatus([]);
     setSelectedAmenities([]);
     setPriceRange([]);
     setPorkFreeOnly(false);
@@ -589,21 +582,6 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
         ))}
       </FilterSection>
 
-      {/* Certification Status */}
-      <FilterSection title="Certification Status" defaultOpen={false}>
-        {CERT_STATUSES.map(({ label, value, dot }) => (
-          <div key={value} className="flex items-center gap-2">
-            <Checkbox
-              id={`cert-${value}`}
-              checked={certStatus.includes(value)}
-              onCheckedChange={() => toggle(certStatus, value, setCertStatus)}
-            />
-            <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot}`} />
-            <Label htmlFor={`cert-${value}`} className="text-sm cursor-pointer">{label}</Label>
-          </div>
-        ))}
-      </FilterSection>
-
       {/* Amenities */}
       <FilterSection title="Amenities" defaultOpen={false}>
         {AMENITIES_LIST.map((a) => (
@@ -621,22 +599,22 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
       {/* Price Range */}
       <FilterSection title="Price Range" defaultOpen={false}>
         <div className="flex gap-2 flex-wrap">
-          {PRICE_RANGES.map((p) => (
+          {PRICE_RANGES.map((range) => (
             <button
-              key={p}
-              onClick={() => toggle(priceRange, p, setPriceRange)}
+              key={range.label}
+              onClick={() => toggle(priceRange, range.label, setPriceRange)}
               className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
-                priceRange.includes(p)
+                priceRange.includes(range.label)
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-foreground border-border hover:border-primary"
               }`}
             >
-              {p}
+              {range.label}
             </button>
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          $ budget · $$ moderate · $$$ upscale · $$$$ luxury
+          Uses average place budget in Baht.
         </p>
       </FilterSection>
 
@@ -694,11 +672,7 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
             Has Prayer Room
           </Label>
         </div>
-        {[
-          "Has Wudu Facility",
-          "Qibla Marked",
-          "Prayer Mats Available",
-        ].map((label) => (
+        {["Wudu Facility", "Qibla Direction"].map((label) => (
           <div key={label} className="flex items-center gap-2">
             <Checkbox
               id={`prayer-${label}`}
@@ -932,7 +906,7 @@ function PlaceCard({
             ({place.reviews.toLocaleString()})
           </span>
           <span className="ml-auto font-semibold text-foreground flex-shrink-0">
-            {place.priceRange}
+            {place.priceRange} Baht
           </span>
         </div>
 

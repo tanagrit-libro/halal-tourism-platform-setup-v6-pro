@@ -79,13 +79,13 @@ const INITIAL_TICKETS: Ticket[] = [
   },
   {
     id: 'TKT-002',
-    subject: 'Certificate type change from Muslim-Friendly to Halal Food',
+    subject: 'Certificate type change from Traveler-Friendly to Halal Food',
     category: 'certification_inquiry',
     status: 'waiting_admin',
     createdAt: 'Jun 8, 2026',
     updatedAt: 'Jun 8, 2026',
     messages: [
-      { id: 'm1', from: 'business', name: 'Ahmad Fauzi', text: 'We recently upgraded our certification from Muslim-Friendly to Halal Food. Can we update the certificate type on our existing listing?', timestamp: 'Jun 8, 2026 · 11:00 AM' },
+      { id: 'm1', from: 'business', name: 'Ahmad Fauzi', text: 'We recently upgraded our certification from Traveler-Friendly to Halal Food. Can we update the certificate type on our existing listing?', timestamp: 'Jun 8, 2026 · 11:00 AM' },
     ],
   },
   {

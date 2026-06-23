@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TrustStatus } from "../components/halal-badge";
 import { addAuditEvent } from "./prototype-audit-workflow";
+import { CERTIFYING_SOURCES } from "./prototype-options";
 
 export type PrototypePlaceStatus =
   | "Pending Review"
@@ -40,7 +41,7 @@ export interface PrototypePlaceRecord {
   images: number;
   image: string;
   source: string;
-  priceRange: "$" | "$$" | "$$$" | "$$$$";
+  priceRange: string;
   amenities: string[];
   porkFree: boolean;
   alcoholFree: boolean;
@@ -83,12 +84,12 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     website: "https://al-baraka.com",
     docs: { license: true, halal: true, sha: true },
     certExpiry: "2027-01-10",
-    certAgency: "CICOT",
+    certAgency: CERTIFYING_SOURCES[0],
     certNumber: "CICOT-2026-0101",
     images: 5,
     image: imageForPlaceType("Restaurant"),
-    source: "CICOT",
-    priceRange: "$$",
+    source: CERTIFYING_SOURCES[0],
+    priceRange: "350",
     amenities: ["Prayer Room", "No Pork", "No Alcohol", "WiFi"],
     porkFree: true,
     alcoholFree: true,
@@ -112,13 +113,13 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     phone: "+66 76 222 333",
     website: "https://phukethotel.com",
     docs: { license: true, halal: false, sha: true },
-    certExpiry: "",
-    certAgency: "",
-    certNumber: "",
+    certExpiry: "2026-09-30",
+    certAgency: CERTIFYING_SOURCES[1],
+    certNumber: "THSI-2026-PENDING-0218",
     images: 3,
     image: imageForPlaceType("Hotel"),
     source: "Owner Submitted",
-    priceRange: "$$$",
+    priceRange: "2500",
     amenities: ["Prayer Room", "WiFi"],
     porkFree: true,
     alcoholFree: false,
@@ -140,16 +141,16 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     lng: "98.9817",
     openingHours: "05:00-20:00",
     phone: "+66 53 123 456",
-    website: "",
+    website: "https://chiangmai-prayerhall.org",
     adminComment: "Certificate scan is illegible. Please re-upload a high-resolution PDF.",
     docs: { license: true, halal: true, sha: false },
     certExpiry: "2025-12-31",
-    certAgency: "CICOT",
+    certAgency: CERTIFYING_SOURCES[0],
     certNumber: "CICOT-2025-0182",
     images: 2,
     image: imageForPlaceType("Mosque"),
-    source: "CICOT",
-    priceRange: "$",
+    source: CERTIFYING_SOURCES[0],
+    priceRange: "0",
     amenities: ["Prayer Room", "Wudu Facility", "Qibla Direction"],
     porkFree: true,
     alcoholFree: true,
@@ -174,12 +175,12 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     website: "https://halalseafood.co.th",
     docs: { license: true, halal: true, sha: true },
     certExpiry: "2026-07-01",
-    certAgency: "CICOT",
+    certAgency: CERTIFYING_SOURCES[0],
     certNumber: "CICOT-2025-0444",
     images: 4,
     image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400",
-    source: "CICOT",
-    priceRange: "$$",
+    source: CERTIFYING_SOURCES[0],
+    priceRange: "600",
     amenities: ["No Pork", "No Alcohol", "Prayer Room"],
     porkFree: true,
     alcoholFree: true,
@@ -201,15 +202,15 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     lng: "100.5709",
     openingHours: "11:00-21:00",
     phone: "+66 35 111 222",
-    website: "",
+    website: "https://oldtownkebabhouse.example.com",
     docs: { license: true, halal: true, sha: true },
     certExpiry: "2025-12-31",
-    certAgency: "CICOT",
+    certAgency: CERTIFYING_SOURCES[0],
     certNumber: "CICOT-2024-0031",
     images: 1,
     image: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=400",
-    source: "CICOT",
-    priceRange: "$",
+    source: CERTIFYING_SOURCES[0],
+    priceRange: "180",
     amenities: ["No Pork"],
     porkFree: true,
     alcoholFree: true,
@@ -321,7 +322,7 @@ export function createSubmittedPlace(input: {
   certAgency: string;
   certNumber: string;
   certExpiry: string;
-  priceRange: "$" | "$$" | "$$$" | "$$$$";
+  priceRange: string;
   amenities: string[];
   porkFree: boolean;
   alcoholFree: boolean;

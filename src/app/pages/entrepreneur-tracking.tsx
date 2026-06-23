@@ -58,7 +58,7 @@ const SUBMISSIONS: Submission[] = [
     reviewDate: '2026-01-18',
     image: 'https://images.unsplash.com/photo-1600555379885-08a02224726d?w=400',
     feedback: 'Approved. Your listing is now live on the platform.',
-    certAgency: 'CICOT',
+    certAgency: 'CICOT (Central Islamic Council of Thailand)',
     certNumber: 'CICOT-2024-1187',
     certIssueDate: '2024-01-15',
     certExpiryDate: '2026-01-14',
@@ -84,8 +84,8 @@ const SUBMISSIONS: Submission[] = [
     reviewDate: null,
     image: 'https://images.unsplash.com/photo-1766856925165-94997a2104b4?w=400',
     feedback: 'Your submission is currently being reviewed by our team.',
-    certAgency: 'HALA Thailand',
-    certNumber: 'HALA-2025-0892',
+    certAgency: 'THSI (The Halal Standard Institute of Thailand)',
+    certNumber: 'THSI-2025-0892',
     certIssueDate: '2025-06-01',
     certExpiryDate: '2027-05-31',
     daysUntilExpiry: 349,
@@ -106,11 +106,11 @@ const SUBMISSIONS: Submission[] = [
     status: 'Returned for Correction',
     reviewDate: '2026-06-02',
     image: 'https://images.unsplash.com/photo-1607411144164-97857cf86e1a?w=400',
-    feedback: 'Please upload a valid halal certificate from CICOT or HALA Thailand, and provide a complete business address.',
-    certAgency: '—',
-    certNumber: '—',
-    certIssueDate: '—',
-    certExpiryDate: '—',
+    feedback: 'Please upload a valid halal certificate from an approved certifying source, and provide a complete business address.',
+    certAgency: 'Pending certifying source',
+    certNumber: 'Pending certificate number',
+    certIssueDate: 'Pending issue date',
+    certExpiryDate: 'Pending expiry date',
     daysUntilExpiry: null,
     reVerificationRequired: false,
     reVerificationDue: null,
@@ -118,7 +118,7 @@ const SUBMISSIONS: Submission[] = [
       { date: '2026-05-28', event: 'Submission received', type: 'submit' },
       { date: '2026-05-29', event: 'Auto-validation failed (score 42/100) — missing certificate', type: 'alert' },
       { date: '2026-06-02', event: 'Returned for edit by Admin Priya', type: 'action' },
-      { date: '2026-06-02', event: 'Admin note: upload CICOT or HALA certificate', type: 'review' },
+      { date: '2026-06-02', event: 'Admin note: upload certificate from an approved certifying source', type: 'review' },
     ],
     expanded: false,
   },
@@ -131,10 +131,10 @@ const SUBMISSIONS: Submission[] = [
     reviewDate: '2026-05-25',
     image: 'https://images.unsplash.com/photo-1768152860286-15fa04f4b1a1?w=400',
     feedback: 'Rejected: duplicate submission with conflicting location data. You may resubmit with full documentation after resolving the address conflict.',
-    certAgency: '—',
-    certNumber: '—',
-    certIssueDate: '—',
-    certExpiryDate: '—',
+    certAgency: 'Rejected before source verification',
+    certNumber: 'Rejected before certificate validation',
+    certIssueDate: 'Rejected before issue-date validation',
+    certExpiryDate: 'Rejected before expiry validation',
     daysUntilExpiry: null,
     reVerificationRequired: false,
     reVerificationDue: null,
@@ -189,10 +189,10 @@ function toSubmission(place: PrototypePlaceRecord): Submission {
     reviewDate: status === "Under Review" ? null : place.submittedDate,
     image: place.image,
     feedback,
-    certAgency: place.certAgency || "—",
-    certNumber: place.certNumber || "—",
+    certAgency: place.certAgency || "Pending certifying source",
+    certNumber: place.certNumber || "Pending certificate number",
     certIssueDate: "Recorded in submission",
-    certExpiryDate: place.certExpiry || "—",
+    certExpiryDate: place.certExpiry || "Pending certificate expiry",
     daysUntilExpiry: expiryDays,
     reVerificationRequired: place.status === "Expired" || (expiryDays !== null && expiryDays < 0),
     reVerificationDue: place.certExpiry || null,
@@ -228,7 +228,7 @@ const TIMELINE_ICONS: Record<TimelineEvent['type'], { icon: React.ElementType; c
 };
 
 function ExpiryTimeline({ submission }: { submission: Submission }) {
-  if (submission.certExpiryDate === '—') return null;
+  if (submission.certExpiryDate.toLowerCase().includes('pending') || submission.certExpiryDate.toLowerCase().includes('rejected')) return null;
   const expired = (submission.daysUntilExpiry ?? 0) < 0;
   const expiringSoon = (submission.daysUntilExpiry ?? 999) <= 30 && !expired;
 
@@ -248,7 +248,7 @@ function ExpiryTimeline({ submission }: { submission: Submission }) {
         {!expired && !expiringSoon && <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0">Valid</Badge>}
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div><p className="text-muted-foreground">Agency</p><p className="font-medium">{submission.certAgency}</p></div>
+        <div><p className="text-muted-foreground">Certifying Source</p><p className="font-medium">{submission.certAgency}</p></div>
         <div><p className="text-muted-foreground">Number</p><p className="font-medium font-mono">{submission.certNumber}</p></div>
         <div><p className="text-muted-foreground">Issued</p><p className="font-medium">{submission.certIssueDate}</p></div>
         <div>
@@ -364,7 +364,7 @@ export function EntrepreneurTracking({ onNavigate, onLogout }: EntrepreneurTrack
             <div className="text-xs text-red-800">
               <strong>Re-verification required:</strong> {stats.expiring} listing(s) have expired certificates.
               Upload a renewed certificate to restore public visibility. The platform does not issue certificates —
-              contact your certifying agency (CICOT / HALA Thailand) for renewal.
+              contact your certifying source for renewal.
             </div>
           </div>
         )}
@@ -470,7 +470,7 @@ export function EntrepreneurTracking({ onNavigate, onLogout }: EntrepreneurTrack
                 <p>• Initial review: 1–2 business days · Full verification: 3–5 business days</p>
                 <p>• Certificate expiry reminders sent 30 days before expiry date</p>
                 <p>• Listings with expired certificates are automatically flagged and hidden after grace period</p>
-                <p>• Certification decisions remain with CICOT / HALA Thailand / JAKIM — this platform records status only</p>
+                <p>• Certification decisions remain with the approved certifying source — this platform records status only</p>
               </div>
             </div>
           </CardContent>

@@ -14,7 +14,9 @@ import {
   MapPin,
   BookOpen,
   ShieldCheck,
-  ChevronDown
+  ChevronDown,
+  LockKeyhole,
+  MessageCircle
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -30,20 +32,18 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-export type AdminRole = 'Super Admin' | 'Approver' | 'Content Admin' | 'Data Reviewer';
+export type AdminRole = 'Super Admin' | 'Place Manager' | 'Content Manager';
 
 const ROLE_CONFIG: Record<AdminRole, { color: string; badge: string }> = {
   'Super Admin':    { color: 'bg-purple-600',  badge: 'bg-purple-100 text-purple-800 border-purple-300' },
-  'Approver':       { color: 'bg-blue-600',    badge: 'bg-blue-100 text-blue-800 border-blue-300' },
-  'Content Admin':  { color: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-  'Data Reviewer':  { color: 'bg-amber-600',   badge: 'bg-amber-100 text-amber-800 border-amber-300' },
+  'Place Manager':  { color: 'bg-blue-600',    badge: 'bg-blue-100 text-blue-800 border-blue-300' },
+  'Content Manager': { color: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
 };
 
 export const ROLE_PERMISSIONS: Record<AdminRole, Record<string, boolean>> = {
-  'Super Admin':   { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: true,  manageApiKeys: true,  manageUsers: true,  exportData: true  },
-  'Approver':      { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: false, manageApiKeys: false, manageUsers: false, exportData: true  },
-  'Content Admin': { reviewData: true,  approveReject: false, publishUnpublish: true,  manageContent: true,  manageApiKeys: false, manageUsers: false, exportData: false },
-  'Data Reviewer': { reviewData: true,  approveReject: false, publishUnpublish: false, manageContent: false, manageApiKeys: false, manageUsers: false, exportData: false },
+  'Super Admin':     { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: true,  manageApiKeys: true,  manageUsers: true,  exportData: true  },
+  'Place Manager':   { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: false, manageApiKeys: false, manageUsers: false, exportData: true  },
+  'Content Manager': { reviewData: true,  approveReject: false, publishUnpublish: true,  manageContent: true,  manageApiKeys: false, manageUsers: false, exportData: false },
 };
 
 interface AdminLayoutProps {
@@ -74,13 +74,15 @@ export function AdminLayout({
 
   const navItems = [
     { id: 'dashboard',   label: t('nav.dashboard'), icon: LayoutDashboard },
-    { id: 'places',      label: t('nav.places'),    icon: MapPin },
-    { id: 'content',     label: t('nav.content'),   icon: BookOpen,  hidden: !perms.manageContent },
+    { id: 'places',      label: 'Place Management', icon: MapPin },
+    { id: 'content',     label: 'Content Management', icon: BookOpen,  hidden: !perms.manageContent },
+    { id: 'moderation',  label: 'Content Moderation', icon: FileText },
+    { id: 'support',     label: 'Support Center', icon: MessageCircle },
     { id: 'users',       label: t('nav.users'),     icon: Users,     hidden: !perms.manageUsers },
-    { id: 'moderation',  label: t('nav.moderation'),icon: FileText },
     { id: 'master-data', label: t('nav.masterData'),icon: Database },
     { id: 'reports',     label: t('nav.reports'),   icon: BarChart3 },
     { id: 'api-keys',    label: t('nav.apiKeys'),   icon: Key,       hidden: !perms.manageApiKeys },
+    { id: 'security-pdpa', label: 'Security & PDPA', icon: LockKeyhole, hidden: true },
     { id: 'audit-log',   label: t('nav.audit'),     icon: FileSearch },
     { id: 'prayer',      label: t('nav.prayer'),    icon: Compass },
   ].filter(i => !i.hidden);

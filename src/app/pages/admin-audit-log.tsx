@@ -22,11 +22,14 @@ interface AdminAuditLogProps {
   onLogout?: () => void;
 }
 
+const SHOW_SECURITY_PDPA_INDICATORS = false;
+
 type EventType =
   | 'Login' | 'Logout' | 'Edit' | 'Approve' | 'Reject' | 'Return for Correction'
   | 'Import' | 'Export' | 'Publish' | 'Unpublish' | 'Revoke'
   | 'API Key Action' | 'Auto-hide Expired' | 'Request Docs'
-  | 'Create Draft' | 'Submit for Review' | 'Schedule' | 'Archive' | 'Restore';
+  | 'Create Draft' | 'Submit for Review' | 'Schedule' | 'Archive' | 'Restore'
+  | 'View Sensitive Data' | 'PDPA Request' | 'Backup';
 
 interface AuditEvent {
   id: string;
@@ -44,20 +47,23 @@ interface AuditEvent {
 
 const AUDIT_EVENTS: AuditEvent[] = [
   { id: 'EVT-001', timestamp: '2026-06-16 09:14:02', actor: 'yana@yana-group.com',       role: 'Business',    action: 'Login',              entity: 'Yana Hospitality Group', entityType: 'Business Account', detail: 'Successful login with 2FA from Chrome on macOS',           ip: '101.12.34.56',   session: 'sess_aaa111', status: 'Success' },
-  { id: 'EVT-002', timestamp: '2026-06-16 09:02:18', actor: 'ahmad@halaltourism.com',    role: 'Approver',    action: 'Approve',            entity: 'Al-Baraka Restaurant',   entityType: 'Place',           detail: 'Approved for publication. Cert verified: CICOT-2024-0012', ip: '192.168.1.10',   session: 'sess_bbb222', status: 'Success' },
+  { id: 'EVT-002', timestamp: '2026-06-16 09:02:18', actor: 'ahmad@halaltourism.com',    role: 'Place Manager', action: 'Approve',            entity: 'Al-Baraka Restaurant',   entityType: 'Place',           detail: 'Approved for publication. Cert verified: CICOT-2024-0012', ip: '192.168.1.10',   session: 'sess_bbb222', status: 'Success' },
   { id: 'EVT-003', timestamp: '2026-06-16 08:45:55', actor: 'system',                   role: 'System',      action: 'Auto-hide Expired',  entity: 'Old Town Kebab House',   entityType: 'Place',           detail: 'Certificate expired 2025-12-31. Listing auto-hidden.',    ip: 'system',         session: 'auto',        status: 'Success' },
   { id: 'EVT-004', timestamp: '2026-06-15 22:10:04', actor: 'reza@halaltourism.com',    role: 'Super Admin', action: 'API Key Action',     entity: 'Mobile App Production',  entityType: 'API Key',         detail: 'Key rotated. Old key deactivated. New key issued.',        ip: '10.0.0.5',       session: 'sess_ccc333', status: 'Success' },
-  { id: 'EVT-005', timestamp: '2026-06-15 18:30:40', actor: 'sarah@halaltourism.com',   role: 'Data Rev.',   action: 'Return for Correction', entity: 'Phuket Beach Resort', entityType: 'Place',           detail: 'Cert scan illegible. Reason: Low-res PDF submitted.',      ip: '192.168.1.11',   session: 'sess_ddd444', status: 'Success' },
+  { id: 'EVT-005', timestamp: '2026-06-15 18:30:40', actor: 'sarah@halaltourism.com',   role: 'Place Manager', action: 'Return for Correction', entity: 'Phuket Beach Resort', entityType: 'Place',           detail: 'Cert scan illegible. Reason: Low-res PDF submitted.',      ip: '192.168.1.11',   session: 'sess_ddd444', status: 'Success' },
   { id: 'EVT-006', timestamp: '2026-06-15 14:20:00', actor: 'reza@halaltourism.com',    role: 'Super Admin', action: 'Export',             entity: 'All approved places',    entityType: 'Data Export',     detail: 'CSV export of 1842 approved place records.',              ip: '10.0.0.5',       session: 'sess_ccc333', status: 'Success' },
-  { id: 'EVT-007', timestamp: '2026-06-15 11:05:33', actor: 'unknown@external.com',     role: '—',           action: 'Login',              entity: 'Admin Portal',           entityType: 'Auth',            detail: 'Failed login: wrong password (3rd attempt).',             ip: '203.45.67.89',   session: '—',           status: 'Failed' },
-  { id: 'EVT-008', timestamp: '2026-06-15 10:44:12', actor: 'ahmad@halaltourism.com',   role: 'Approver',    action: 'Request Docs',       entity: 'Chiang Mai Central Mosque', entityType: 'Place',        detail: 'Requested renewed halal certificate from business.',       ip: '192.168.1.10',   session: 'sess_bbb222', status: 'Success' },
+  { id: 'EVT-007', timestamp: '2026-06-15 11:05:33', actor: 'unknown@external.com',     role: 'External Login Attempt', action: 'Login',     entity: 'Admin Portal',           entityType: 'Auth',            detail: 'Failed login: wrong password (3rd attempt).',             ip: '203.45.67.89',   session: 'blocked_login_attempt', status: 'Failed' },
+  { id: 'EVT-008', timestamp: '2026-06-15 10:44:12', actor: 'ahmad@halaltourism.com',   role: 'Place Manager', action: 'Request Docs',       entity: 'Chiang Mai Central Mosque', entityType: 'Place',        detail: 'Requested renewed halal certificate from business.',       ip: '192.168.1.10',   session: 'sess_bbb222', status: 'Success' },
   { id: 'EVT-009', timestamp: '2026-06-14 16:55:00', actor: 'reza@halaltourism.com',    role: 'Super Admin', action: 'Revoke',             entity: 'Old CRM Integration',    entityType: 'API Key',         detail: 'API key revoked. Reason: Integration decommissioned.',     ip: '10.0.0.5',       session: 'sess_eee555', status: 'Success' },
   { id: 'EVT-010', timestamp: '2026-06-14 14:30:55', actor: 'system',                   role: 'System',      action: 'Import',             entity: 'CICOT Certificate API',  entityType: 'Data Import',     detail: '28 records imported. 0 errors.',                           ip: 'system',         session: 'auto',        status: 'Success' },
-  { id: 'EVT-011', timestamp: '2026-06-14 09:00:00', actor: 'nurul@halaltourism.com',   role: 'Content Admin', action: 'Edit',             entity: 'Halal Tourism Article', entityType: 'Content',          detail: 'Updated body text and hero image for featured article.',   ip: '192.168.1.12',   session: 'sess_fff666', status: 'Success' },
-  { id: 'EVT-012', timestamp: '2026-06-13 15:20:10', actor: 'ahmad@halaltourism.com',   role: 'Approver',    action: 'Unpublish',          entity: 'Halal Cafe & Bistro',    entityType: 'Place',           detail: 'Unpublished: pending certificate renewal. Admin comment added.', ip: '192.168.1.10', session: 'sess_bbb222', status: 'Success' },
+  { id: 'EVT-011', timestamp: '2026-06-14 09:00:00', actor: 'nurul@halaltourism.com',   role: 'Content Manager', action: 'Edit',             entity: 'Halal Tourism Article', entityType: 'Content',          detail: 'Updated body text and hero image for featured article.',   ip: '192.168.1.12',   session: 'sess_fff666', status: 'Success' },
+  { id: 'EVT-012', timestamp: '2026-06-13 15:20:10', actor: 'ahmad@halaltourism.com',   role: 'Place Manager', action: 'Unpublish',          entity: 'Halal Cafe & Bistro',    entityType: 'Place',           detail: 'Unpublished: pending certificate renewal. Admin comment added.', ip: '192.168.1.10', session: 'sess_bbb222', status: 'Success' },
   { id: 'EVT-013', timestamp: '2026-06-13 11:45:00', actor: 'system',                   role: 'System',      action: 'Auto-hide Expired',  entity: 'Halal Seafood Paradise', entityType: 'Place',           detail: 'Certificate expiry warning emailed to business 30 days prior.', ip: 'system',        session: 'auto',        status: 'Warning' },
   { id: 'EVT-014', timestamp: '2026-06-12 10:00:00', actor: 'reza@halaltourism.com',    role: 'Super Admin', action: 'Publish',            entity: 'Grand Halal Restaurant', entityType: 'Place',           detail: 'Restored to published after cert re-upload verified.',     ip: '10.0.0.5',       session: 'sess_ggg777', status: 'Success' },
-  { id: 'EVT-015', timestamp: '2026-06-12 09:10:44', actor: 'sarah@halaltourism.com',   role: 'Data Rev.',   action: 'Reject',             entity: 'Siam Halal Bakery',      entityType: 'Place',           detail: 'Rejected: duplicate GPS coordinates with existing record.', ip: '192.168.1.11',  session: 'sess_ddd444', status: 'Success' },
+  { id: 'EVT-015', timestamp: '2026-06-12 09:10:44', actor: 'sarah@halaltourism.com',   role: 'Place Manager', action: 'Reject',             entity: 'Siam Halal Bakery',      entityType: 'Place',           detail: 'Rejected: duplicate GPS coordinates with existing record.', ip: '192.168.1.11',  session: 'sess_ddd444', status: 'Success' },
+  { id: 'EVT-016', timestamp: '2026-06-12 08:44:10', actor: 'ahmad@halaltourism.com',   role: 'Place Manager', action: 'View Sensitive Data', entity: 'Yana Halal Restaurant',  entityType: 'Security / PDPA', detail: 'Viewed protected halal certificate document. Access allowed by Place Manager role.', ip: '192.168.1.10', session: 'sess_hhh888', status: 'Success' },
+  { id: 'EVT-017', timestamp: '2026-06-12 02:15:00', actor: 'system',                   role: 'System',      action: 'Backup',             entity: 'Document vault snapshot', entityType: 'Security / PDPA', detail: 'Encrypted backup completed and restore point marked available.', ip: 'system', session: 'auto', status: 'Success' },
+  { id: 'EVT-018', timestamp: '2026-06-11 16:30:00', actor: 'dpo@gosafar.th',           role: 'Super Admin', action: 'PDPA Request',       entity: 'PDPA-REQ-001',          entityType: 'Security / PDPA', detail: 'Business data access request received and assigned for review.', ip: '10.0.0.5', session: 'sess_iii999', status: 'Warning' },
 ];
 
 const ACTION_COLORS: Partial<Record<EventType, string>> = {
@@ -77,20 +83,32 @@ const ACTION_COLORS: Partial<Record<EventType, string>> = {
   'Schedule':           'bg-violet-50 text-violet-700 border-violet-200',
   'Archive':            'bg-slate-50 text-slate-600 border-slate-200',
   'Restore':            'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'View Sensitive Data': 'bg-blue-50 text-blue-700 border-blue-200',
+  'PDPA Request':        'bg-purple-50 text-purple-700 border-purple-200',
+  'Backup':              'bg-emerald-50 text-emerald-700 border-emerald-200',
   'Import':             'bg-indigo-50 text-indigo-700 border-indigo-200',
   'Export':             'bg-indigo-50 text-indigo-700 border-indigo-200',
   'API Key Action':     'bg-cyan-50 text-cyan-700 border-cyan-200',
 };
 
-const ALL_ACTIONS: EventType[] = [
+const SECURITY_PDPA_ACTIONS: EventType[] = ['View Sensitive Data', 'PDPA Request', 'Backup'];
+
+const BASE_ACTIONS: EventType[] = [
   'Login', 'Logout', 'Edit', 'Approve', 'Reject', 'Return for Correction',
   'Import', 'Export', 'Publish', 'Unpublish', 'Revoke', 'API Key Action',
   'Auto-hide Expired', 'Request Docs', 'Create Draft', 'Submit for Review',
   'Schedule', 'Archive', 'Restore'
 ];
 
-const ROLES = ['Super Admin', 'Approver', 'Content Admin', 'Data Reviewer', 'Business', 'System'];
-const ENTITY_TYPES = ['Place', 'API Key', 'Data Import', 'Data Export', 'Auth', 'Content', 'Business Account'];
+const ALL_ACTIONS: EventType[] = SHOW_SECURITY_PDPA_INDICATORS
+  ? [...BASE_ACTIONS, ...SECURITY_PDPA_ACTIONS]
+  : BASE_ACTIONS;
+
+const ROLES = ['Super Admin', 'Place Manager', 'Content Manager', 'Business', 'System'];
+const BASE_ENTITY_TYPES = ['Place', 'API Key', 'Data Import', 'Data Export', 'Auth', 'Content', 'Business Account'];
+const ENTITY_TYPES = SHOW_SECURITY_PDPA_INDICATORS
+  ? [...BASE_ENTITY_TYPES, 'Security / PDPA']
+  : BASE_ENTITY_TYPES;
 
 export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
   const { events: dynamicEvents } = usePrototypeAuditEvents();
@@ -102,6 +120,10 @@ export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
   const [filterDate, setFilterDate] = useState('all');
   const [filterIp, setFilterIp] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+
+  const visibleStaticAuditEvents = SHOW_SECURITY_PDPA_INDICATORS
+    ? AUDIT_EVENTS
+    : AUDIT_EVENTS.filter(event => !SECURITY_PDPA_ACTIONS.includes(event.action) && event.entityType !== 'Security / PDPA');
 
   const allEvents: AuditEvent[] = [
     ...dynamicEvents.map((event): AuditEvent => ({
@@ -121,7 +143,7 @@ export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
       session: 'prototype',
       status: event.status,
     })),
-    ...AUDIT_EVENTS,
+    ...visibleStaticAuditEvents,
   ];
 
   const filtered = allEvents.filter(e => {
@@ -157,6 +179,23 @@ export function AdminAuditLog({ onNavigate, onLogout }: AdminAuditLogProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {SHOW_SECURITY_PDPA_INDICATORS && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="size-5 text-blue-700 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-blue-900">Security and PDPA events are included</p>
+                  <p className="text-sm text-blue-800">Sensitive document access, export approvals, encrypted backups, and PDPA request actions are traceable here.</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => onNavigate?.("security-pdpa")}>
+                View PDPA Controls
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
