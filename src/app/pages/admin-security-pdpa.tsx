@@ -40,20 +40,20 @@ const ROLE_ROWS = [
     sensitive: "Full access with audit trail",
   },
   {
-    role: "Place Manager",
+    role: "Approver",
     scope: "Review entrepreneur submissions, certification documents, contact data, and publish status.",
     sensitive: "Business contact and certificate documents only",
   },
   {
-    role: "Content Manager",
+    role: "Data Reviewer",
     scope: "Manage content, article workflow, content moderation, and public communication.",
     sensitive: "No certificate document access",
   },
 ];
 
 const DOCUMENT_POLICIES = [
-  { item: "Halal certificates", storage: "Encrypted object storage", access: "Super Admin, Place Manager", retention: "Active period + audit archive", status: "Protected" },
-  { item: "Business registration", storage: "Encrypted object storage", access: "Super Admin, Place Manager", retention: "Account lifetime + legal archive", status: "Protected" },
+  { item: "Halal certificates", storage: "Encrypted object storage", access: "Super Admin, Approver", retention: "Active period + audit archive", status: "Protected" },
+  { item: "Business registration", storage: "Encrypted object storage", access: "Super Admin, Approver", retention: "Account lifetime + legal archive", status: "Protected" },
   { item: "Contact phone/email", storage: "Masked in review panels", access: "Need-to-know by workflow", retention: "Until account deletion request is approved", status: "Restricted" },
   { item: "Export files", storage: "Time-limited download package", access: "Super Admin approval", retention: "30 days then auto-expire", status: "Controlled" },
 ];
@@ -73,9 +73,9 @@ const BACKUP_POLICIES = [
 
 const SECURITY_EVENTS = [
   { id: "SEC-001", time: "2026-06-23 09:10", actor: "Super Admin", action: "Export approved", target: "All approved places", result: "Success" },
-  { id: "SEC-002", time: "2026-06-23 08:42", actor: "Place Manager", action: "Viewed certificate document", target: "Yana Halal Restaurant", result: "Success" },
+  { id: "SEC-002", time: "2026-06-23 08:42", actor: "Approver", action: "Viewed certificate document", target: "Yana Halal Restaurant", result: "Success" },
   { id: "SEC-003", time: "2026-06-22 17:20", actor: "System", action: "Backup completed", target: "Document vault snapshot", result: "Success" },
-  { id: "SEC-004", time: "2026-06-22 15:05", actor: "Content Manager", action: "Denied certificate access", target: "Phuket Beach Resort", result: "Blocked" },
+  { id: "SEC-004", time: "2026-06-22 15:05", actor: "Data Reviewer", action: "Denied certificate access", target: "Phuket Beach Resort", result: "Blocked" },
 ];
 
 const PDPA_REQUESTS = [

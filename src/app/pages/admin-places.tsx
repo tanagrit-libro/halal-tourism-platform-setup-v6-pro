@@ -1,4 +1,10 @@
-import { AdminLayout } from "../components/admin-layout";
+import {
+  AdminLayout,
+  AdminRole,
+  getStoredAdminRole,
+  isAdminRole,
+  ROLE_PERMISSIONS,
+} from "../components/admin-layout";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -19,7 +25,7 @@ import {
   RotateCcw, Eye, FileText, Upload, RefreshCw, ChevronDown, ChevronUp,
   AlertTriangle, LockKeyhole
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PLACE_TYPE_LABELS } from "../data/place-types";
 import {
   PrototypePlaceRecord,
@@ -38,8 +44,18 @@ type PlaceStatus = PrototypePlaceStatus;
 type Place = PrototypePlaceRecord;
 
 type WorkflowAction = 'approve' | 'reject' | 'return' | 'request-docs' | 'publish' | 'unpublish';
+type AdminPermissionKey = keyof (typeof ROLE_PERMISSIONS)[AdminRole];
 
 const SHOW_SECURITY_PDPA_INDICATORS = false;
+
+const ACTION_PERMISSION: Record<WorkflowAction, AdminPermissionKey> = {
+  approve: 'approveReject',
+  reject: 'approveReject',
+  return: 'approveReject',
+  'request-docs': 'approveReject',
+  publish: 'publishUnpublish',
+  unpublish: 'publishUnpublish',
+};
 
 const WORKFLOW_CONFIG: Record<WorkflowAction, { label: string; color: string; requiresReason: boolean }> = {
   'approve':      { label: 'Approve for Publication',      color: 'bg-emerald-600 hover:bg-emerald-700', requiresReason: false },
@@ -78,6 +94,7 @@ function autoValidate(place: Place) {
 
 export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
   const { places, updatePlace } = usePrototypePlaces();
+  const [adminRole, setAdminRole] = useState<AdminRole>(() => getStoredAdminRole());
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
@@ -85,6 +102,19 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
   const [workflowAction, setWorkflowAction] = useState<WorkflowAction | null>(null);
   const [reason, setReason] = useState('');
   const [showValidation, setShowValidation] = useState<number | null>(null);
+  const rolePermissions = ROLE_PERMISSIONS[adminRole];
+
+  useEffect(() => {
+    const handleRoleChange = (event: Event) => {
+      const nextRole = (event as CustomEvent<AdminRole>).detail;
+      if (isAdminRole(nextRole)) setAdminRole(nextRole);
+    };
+
+    window.addEventListener('admin-role-change', handleRoleChange);
+    return () => window.removeEventListener('admin-role-change', handleRoleChange);
+  }, []);
+
+  const canUseAction = (action: WorkflowAction) => !!rolePermissions[ACTION_PERMISSION[action]];
 
   const filtered = places.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -110,6 +140,10 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
 
   const handleWorkflowSubmit = () => {
     if (!selectedPlace || !workflowAction) return;
+    if (!canUseAction(workflowAction)) {
+      toast.error(`${adminRole} does not have permission to perform this action.`);
+      return;
+    }
     const cfg = WORKFLOW_CONFIG[workflowAction];
     if (cfg.requiresReason && !reason.trim()) {
       toast.error('A reason or comment is required for this action.');
@@ -166,7 +200,7 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
                 <div>
                   <p className="font-semibold text-blue-900">Sensitive data controls active</p>
                   <p className="text-sm text-blue-800">
-                    Certification files and business contact details are restricted to Super Admin and Place Manager actions, with every sensitive access logged.
+                    Certification files and business contact details are restricted to Super Admin and Approver actions, with every sensitive access logged.
                   </p>
                 </div>
               </div>
@@ -219,7 +253,13 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
                               </p>
                             )}
                           </div>
-                          <Button size="sm" className="shrink-0" onClick={() => { setSelectedPlace(p); setWorkflowAction(null); }}>
+                          <Button
+                            size="sm"
+                            className="shrink-0"
+                            disabled={!rolePermissions.reviewData}
+                            title={rolePermissions.reviewData ? "Review source record" : `${adminRole} cannot review source records`}
+                            onClick={() => { setSelectedPlace(p); setWorkflowAction(null); }}
+                          >
                             Review
                           </Button>
                         </div>
@@ -326,6 +366,8 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
                               <Button variant="ghost" size="sm" className="text-xs h-7"
+                                disabled={!rolePermissions.reviewData}
+                                title={rolePermissions.reviewData ? "Review source record" : `${adminRole} cannot review source records`}
                                 onClick={() => { setSelectedPlace(place); setWorkflowAction(null); }}>
                                 <Eye className="size-3.5 mr-1" /> Review
                               </Button>
@@ -422,19 +464,32 @@ export function AdminPlaces({ onNavigate, onLogout }: AdminPlacesProps) {
 
                 {/* Workflow action selector */}
                 <div>
-                  <h4 className="text-sm font-semibold mb-2">Select Governance Action</h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+                    <h4 className="text-sm font-semibold">Select Governance Action</h4>
+                    <span className="text-xs text-muted-foreground">Current role: <strong className="text-foreground">{adminRole}</strong></span>
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {(Object.keys(WORKFLOW_CONFIG) as WorkflowAction[]).map(action => {
                       const cfg = WORKFLOW_CONFIG[action];
+                      const allowed = canUseAction(action);
                       return (
                         <button key={action}
+                          disabled={!allowed}
+                          title={allowed ? cfg.label : `${adminRole} does not have permission for ${cfg.label}`}
                           className={`text-xs text-left px-3 py-2 rounded-lg border-2 transition-colors font-medium ${
                             workflowAction === action
                               ? 'border-slate-700 bg-slate-700 text-white'
-                              : 'border-slate-200 hover:border-slate-400 text-slate-700'
+                              : allowed
+                                ? 'border-slate-200 hover:border-slate-400 text-slate-700'
+                                : 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed'
                           }`}
-                          onClick={() => { setWorkflowAction(action); setReason(''); }}>
+                          onClick={() => {
+                            if (!allowed) return;
+                            setWorkflowAction(action);
+                            setReason('');
+                          }}>
                           {cfg.label}
+                          {!allowed && <span className="block text-[10px] mt-1 text-slate-400">No permission</span>}
                         </button>
                       );
                     })}

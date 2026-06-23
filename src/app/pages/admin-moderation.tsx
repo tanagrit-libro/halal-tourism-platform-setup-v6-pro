@@ -59,7 +59,7 @@ const INITIAL_PLACES: PlaceItem[] = [
     image: 'https://images.unsplash.com/photo-1600555379885-08a02224726d?w=400',
     status: 'Pending', trustStatus: 'certified', certAgency: CERTIFYING_SOURCES[0], certNumber: 'CICOT-2024-1187',
     certExpiry: '2027-01-14', autoValidationScore: 91, autoValidationFlags: [],
-    isPublished: false, isAutoHidden: false, documentsMissing: [], notes: 'Ready for Place Manager approval.', expanded: false,
+    isPublished: false, isAutoHidden: false, documentsMissing: [], notes: 'Ready for Approver approval.', expanded: false,
   },
   {
     id: '2', name: 'Madinah Boutique Hotel', category: 'Hotel',

@@ -37,7 +37,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Entrepreneur' | 'Tourist' | 'Moderator';
+  role: 'Super Admin' | 'Approver' | 'Data Reviewer' | 'Entrepreneur' | 'Tourist';
   status: 'Active' | 'Pending' | 'Suspended';
   department?: string;
   // Req 3.3: Specific fields for grouping Entrepreneurs
@@ -114,23 +114,33 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
     },
     {
       id: '6',
-      name: 'System Admin',
-      email: 'admin@system.com',
-      role: 'Admin',
+      name: 'Reza Prasert',
+      email: 'reza@gosafar.th',
+      role: 'Super Admin',
       status: 'Active',
-      department: 'IT Support',
+      department: 'Platform Governance',
       joinDate: '2025-01-01',
       lastActive: 'Just now',
     },
     {
       id: '7',
-      name: 'Content Moderator',
-      email: 'mod@halaltourism.com',
-      role: 'Moderator',
+      name: 'Ahmad Siddiqui',
+      email: 'ahmad@gosafar.th',
+      role: 'Approver',
       status: 'Active',
-      department: 'Content Team',
+      department: 'Place Verification',
       joinDate: '2025-06-15',
       lastActive: '20 mins ago',
+    },
+    {
+      id: '8',
+      name: 'Nurul Iman',
+      email: 'nurul@gosafar.th',
+      role: 'Data Reviewer',
+      status: 'Active',
+      department: 'Data Review',
+      joinDate: '2025-09-10',
+      lastActive: '35 mins ago',
     },
   ]);
 
@@ -209,8 +219,9 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
   // Requirement 3.1: RBAC Visualization
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case 'Admin': return <Badge className="bg-slate-900">Admin</Badge>;
-      case 'Moderator': return <Badge className="bg-indigo-500">Moderator</Badge>;
+      case 'Super Admin': return <Badge className="bg-purple-600">Super Admin</Badge>;
+      case 'Approver': return <Badge className="bg-blue-600">Approver</Badge>;
+      case 'Data Reviewer': return <Badge className="bg-emerald-600">Data Reviewer</Badge>;
       case 'Entrepreneur': return <Badge className="bg-purple-500">Entrepreneur</Badge>;
       default: return <Badge variant="secondary">Tourist</Badge>;
     }
@@ -273,8 +284,9 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
                       <SelectContent>
                         <SelectItem value="Tourist">Tourist</SelectItem>
                         <SelectItem value="Entrepreneur">Entrepreneur</SelectItem>
-                        <SelectItem value="Moderator">Moderator</SelectItem>
-                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Super Admin">Super Admin</SelectItem>
+                        <SelectItem value="Approver">Approver</SelectItem>
+                        <SelectItem value="Data Reviewer">Data Reviewer</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -376,8 +388,9 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Moderator">Moderator</SelectItem>
+                    <SelectItem value="Super Admin">Super Admin</SelectItem>
+                    <SelectItem value="Approver">Approver</SelectItem>
+                    <SelectItem value="Data Reviewer">Data Reviewer</SelectItem>
                     <SelectItem value="Entrepreneur">Entrepreneur</SelectItem>
                     <SelectItem value="Tourist">Tourist</SelectItem>
                   </SelectContent>
@@ -510,11 +523,14 @@ export function AdminUsers({ onNavigate, onLogout }: AdminUsersProps) {
                             
                             {/* Role Management (Requirement 3.2) */}
                             <DropdownMenuLabel className="text-xs text-muted-foreground">Change Role</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Admin')}>
-                               <Shield className="size-4 mr-2" /> Make Admin
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Super Admin')}>
+                               <Shield className="size-4 mr-2" /> Make Super Admin
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Moderator')}>
-                               <Shield className="size-4 mr-2" /> Make Moderator
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Approver')}>
+                               <Shield className="size-4 mr-2" /> Make Approver
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Data Reviewer')}>
+                               <Shield className="size-4 mr-2" /> Make Data Reviewer
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Entrepreneur')}>
                                <Briefcase className="size-4 mr-2" /> Make Entrepreneur

@@ -115,7 +115,7 @@ const INITIAL_TICKETS: Ticket[] = [
     category: "listing_visibility",
     status: "open",
     priority: "High",
-    assignedTo: "Place Manager",
+    assignedTo: "Approver",
     relatedPlace: "Old Town Kebab House",
     createdAt: "Jun 14, 2026",
     updatedAt: "Jun 14, 2026",
@@ -337,7 +337,7 @@ export function AdminSupport({ onNavigate, onLogout }: AdminSupportProps) {
               <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {[
                   ["1", "Entrepreneur opens ticket", "Business submits document, certification, visibility, or data update issue."],
-                  ["2", "Admin triages", "Place Manager reviews priority, related place, and supporting message history."],
+                  ["2", "Admin triages", "Approver reviews priority, related place, and supporting message history."],
                   ["3", "Admin replies / acts", "Reply is reflected in the Entrepreneur Support Center and status changes to Waiting for Business."],
                   ["4", "Resolve or route", "Admin resolves the case or navigates to Place Management for formal workflow action."],
                 ].map(([step, title, body]) => (

@@ -61,9 +61,9 @@ const IMPORT_BATCHES = [
 ];
 
 const EXPORT_BATCHES = [
-  { id: 'EXP-2026-06', date: '2026-06-15', requestedBy: 'Ahmad (Place Manager)', format: 'CSV',  scope: 'All approved places',   records: 1842, status: 'Ready' },
+  { id: 'EXP-2026-06', date: '2026-06-15', requestedBy: 'Ahmad (Approver)', format: 'CSV',  scope: 'All approved places',   records: 1842, status: 'Ready' },
   { id: 'EXP-2026-05', date: '2026-05-31', requestedBy: 'Super Admin',      format: 'JSON', scope: 'Cert expiry report',    records: 37,   status: 'Ready' },
-  { id: 'EXP-2026-04', date: '2026-04-20', requestedBy: 'Place Manager',    format: 'CSV',  scope: 'Pending review queue',  records: 29,   status: 'Ready' },
+  { id: 'EXP-2026-04', date: '2026-04-20', requestedBy: 'Approver',    format: 'CSV',  scope: 'Pending review queue',  records: 29,   status: 'Ready' },
 ];
 
 const DATA_SHARING = [

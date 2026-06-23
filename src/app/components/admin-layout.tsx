@@ -32,19 +32,32 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-export type AdminRole = 'Super Admin' | 'Place Manager' | 'Content Manager';
+export type AdminRole = 'Super Admin' | 'Approver' | 'Data Reviewer';
+export const ADMIN_ROLE_STORAGE_KEY = 'gosafar-admin-demo-role';
 
 const ROLE_CONFIG: Record<AdminRole, { color: string; badge: string }> = {
   'Super Admin':    { color: 'bg-purple-600',  badge: 'bg-purple-100 text-purple-800 border-purple-300' },
-  'Place Manager':  { color: 'bg-blue-600',    badge: 'bg-blue-100 text-blue-800 border-blue-300' },
-  'Content Manager': { color: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  'Approver':  { color: 'bg-blue-600',    badge: 'bg-blue-100 text-blue-800 border-blue-300' },
+  'Data Reviewer': { color: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
 };
 
 export const ROLE_PERMISSIONS: Record<AdminRole, Record<string, boolean>> = {
   'Super Admin':     { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: true,  manageApiKeys: true,  manageUsers: true,  exportData: true  },
-  'Place Manager':   { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: false, manageApiKeys: false, manageUsers: false, exportData: true  },
-  'Content Manager': { reviewData: true,  approveReject: false, publishUnpublish: true,  manageContent: true,  manageApiKeys: false, manageUsers: false, exportData: false },
+  'Approver':   { reviewData: true,  approveReject: true,  publishUnpublish: true,  manageContent: false, manageApiKeys: false, manageUsers: false, exportData: true  },
+  'Data Reviewer': { reviewData: true,  approveReject: false, publishUnpublish: true,  manageContent: true,  manageApiKeys: false, manageUsers: false, exportData: false },
 };
+
+export const ADMIN_ROLES = Object.keys(ROLE_CONFIG) as AdminRole[];
+
+export function isAdminRole(value: string | null): value is AdminRole {
+  return !!value && ADMIN_ROLES.includes(value as AdminRole);
+}
+
+export function getStoredAdminRole(fallback: AdminRole = 'Super Admin'): AdminRole {
+  if (typeof window === 'undefined') return fallback;
+  const stored = window.localStorage.getItem(ADMIN_ROLE_STORAGE_KEY);
+  return isAdminRole(stored) ? stored : fallback;
+}
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -64,11 +77,15 @@ export function AdminLayout({
   onRoleChange,
 }: AdminLayoutProps) {
   const { t } = useLanguage();
-  const [role, setRole] = useState<AdminRole>(currentRole);
+  const [role, setRole] = useState<AdminRole>(() => getStoredAdminRole(currentRole));
   const perms = ROLE_PERMISSIONS[role];
 
   const handleRoleChange = (r: AdminRole) => {
     setRole(r);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(ADMIN_ROLE_STORAGE_KEY, r);
+      window.dispatchEvent(new CustomEvent<AdminRole>('admin-role-change', { detail: r }));
+    }
     onRoleChange?.(r);
   };
 
@@ -136,7 +153,7 @@ export function AdminLayout({
                 <DropdownMenuContent align="end" className="w-52">
                   <DropdownMenuLabel className="text-xs text-muted-foreground">Switch demo role</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {(Object.keys(ROLE_CONFIG) as AdminRole[]).map(r => (
+                  {ADMIN_ROLES.map(r => (
                     <DropdownMenuItem key={r} onClick={() => handleRoleChange(r)} className={role === r ? 'font-semibold' : ''}>
                       <span className={`w-2 h-2 rounded-full mr-2 ${ROLE_CONFIG[r].color}`} />
                       {r}
