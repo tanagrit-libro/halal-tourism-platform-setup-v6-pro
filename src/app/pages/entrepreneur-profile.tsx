@@ -445,9 +445,7 @@ export function EntrepreneurProfile({ onNavigate, onLogout }: EntrepreneurProfil
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { icon: Shield, label: 'Chrome on macOS', sub: 'Bangkok, Thailand • Current Session', color: 'bg-emerald-100 text-emerald-600', badge: 'Active Now', current: true },
-                    { icon: Smartphone, label: 'Safari on iPhone 14', sub: 'Bangkok, Thailand • 2 days ago', color: 'bg-slate-100 text-slate-600', badge: null, current: false },
-                    { icon: Lock, label: 'Firefox on Windows', sub: 'Unknown location • 5 days ago', color: 'bg-rose-100 text-rose-600', badge: null, current: false },
+                    { icon: Shield, label: 'Chrome on macOS', sub: 'Bangkok, Thailand • Current locked session', color: 'bg-emerald-100 text-emerald-600', badge: 'Only Active Session', current: true },
                   ].map((session, i) => (
                     <div key={i} className={`flex items-center justify-between ${!session.current ? 'opacity-70' : ''}`}>
                       <div className="flex items-center gap-3">
@@ -466,6 +464,9 @@ export function EntrepreneurProfile({ onNavigate, onLogout }: EntrepreneurProfil
                       )}
                     </div>
                   ))}
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                    Production policy: this business account is limited to one active session. New sign-in attempts replace the previous active session and are recorded in the audit log.
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -477,7 +478,7 @@ export function EntrepreneurProfile({ onNavigate, onLogout }: EntrepreneurProfil
                 <div className="space-y-1">
                   <h4 className="font-semibold text-blue-800 text-sm">Security Recommendations</h4>
                   <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
-                    <li>This account may be accessed from multiple devices. Review active sessions regularly.</li>
+                    <li>This account is designed for one active session at a time to reduce shared-account risk.</li>
                     <li>Enable login notifications to be alerted of any unauthorized sign-in attempts.</li>
                     <li>Revoke access immediately for any staff who are no longer with your organization.</li>
                     <li>Use a strong, unique password and rotate it every 6 months.</li>

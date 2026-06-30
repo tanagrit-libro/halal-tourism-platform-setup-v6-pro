@@ -33,7 +33,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PLACE_TYPES, placeTypeLabel } from "../data/place-types";
 import { createSubmittedPlace } from "../data/prototype-place-workflow";
-import { AMENITIES, CERTIFYING_SOURCES } from "../data/prototype-options";
+import { AMENITIES, CERTIFYING_SOURCE_RECORDS, formatPriceRange } from "../data/prototype-options";
 
 interface EntrepreneurSubmitPlaceProps {
   onNavigate?: (page: string) => void;
@@ -84,7 +84,8 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
     descriptionTh: '',
     descriptionMs: '',
     descriptionAr: '',
-    priceRange: '',
+    priceMin: '',
+    priceMax: '',
     // Location
     address: '',
     city: '',
@@ -102,6 +103,8 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
     // Cert
     certType: '',
     certAgency: '',
+    customCertAgency: '',
+    customCertLogoUrl: '',
     certNumber: '',
     issueDate: '',
     expiryDate: '',
@@ -167,7 +170,8 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       descriptionTh: '',
       descriptionMs: '',
       descriptionAr: '',
-      priceRange: '',
+      priceMin: '',
+      priceMax: '',
       address: '',
       city: '',
       latitude: '',
@@ -181,6 +185,8 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       prayerFacility: '',
       certType: '',
       certAgency: '',
+      customCertAgency: '',
+      customCertLogoUrl: '',
       certNumber: '',
       issueDate: '',
       expiryDate: '',
@@ -196,11 +202,14 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
   const validateSubmission = () => {
     const hasAnyName = [form.placeName, form.placeNameTh, form.placeNameMs, form.placeNameAr].some((value) => value.trim());
     const hasAnyDescription = [form.description, form.descriptionTh, form.descriptionMs, form.descriptionAr].some((value) => value.trim().length >= 20);
-    const numericPrice = Number(form.priceRange);
+    const numericPriceMin = Number(form.priceMin);
+    const numericPriceMax = Number(form.priceMax);
+    const effectiveCertAgency = form.certAgency === "other" ? form.customCertAgency.trim() : form.certAgency.trim();
     const checks: { step: number; message: string; pass: boolean }[] = [
       { step: 1, message: "At least one Place / Business Name language is required.", pass: hasAnyName },
       { step: 1, message: "Place Type is required.", pass: !!form.placeType },
-      { step: 1, message: "Average price in Baht is required.", pass: !!form.priceRange && Number.isFinite(numericPrice) && numericPrice >= 0 },
+      { step: 1, message: "Minimum price in Baht is required.", pass: !!form.priceMin && Number.isFinite(numericPriceMin) && numericPriceMin >= 0 },
+      { step: 1, message: "Maximum price in Baht is required and must be greater than or equal to minimum price.", pass: !!form.priceMax && Number.isFinite(numericPriceMax) && numericPriceMax >= numericPriceMin },
       { step: 1, message: "At least one description language must have 20 characters or more.", pass: hasAnyDescription },
       { step: 2, message: "Full Address is required.", pass: !!form.address.trim() },
       { step: 2, message: "City / Province is required.", pass: !!form.city.trim() },
@@ -209,7 +218,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       { step: 4, message: "Alcohol Policy is required.", pass: !!form.alcoholPolicy },
       { step: 4, message: "Prayer Facility Status is required.", pass: !!form.prayerFacility },
       { step: 5, message: "Certificate Type is required.", pass: !!form.certType },
-      { step: 5, message: "Certifying Source is required.", pass: !!form.certAgency.trim() },
+      { step: 5, message: "Certifying Source is required.", pass: !!effectiveCertAgency },
       { step: 5, message: "Certificate Number is required.", pass: !!form.certNumber.trim() },
       { step: 5, message: "Issue Date and Expiry Date are required.", pass: !!form.issueDate && !!form.expiryDate },
       { step: 5, message: "Certificate document upload is required.", pass: !!certDoc },
@@ -228,6 +237,9 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
 
   const handleSubmit = () => {
     if (!validateSubmission()) return;
+    const priceMin = Number(form.priceMin);
+    const priceMax = Number(form.priceMax);
+    const certAgency = form.certAgency === "other" ? form.customCertAgency.trim() : form.certAgency.trim();
     const submittedPlace = createSubmittedPlace({
       name: form.placeName.trim() || form.placeNameTh.trim() || form.placeNameMs.trim() || form.placeNameAr.trim(),
       type: placeTypeLabel(form.placeType),
@@ -238,10 +250,12 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
       openingHours: form.openDaily ? `${form.openTime}-${form.closeTime}` : `${form.openTime}-${form.closeTime}`,
       phone: form.contactPhone.trim(),
       website: form.website.trim(),
-      certAgency: form.certAgency.trim(),
+      certAgency,
       certNumber: form.certNumber.trim(),
       certExpiry: form.expiryDate,
-      priceRange: form.priceRange.trim(),
+      priceRange: String(Math.round((priceMin + priceMax) / 2)),
+      priceMin,
+      priceMax,
       amenities: Array.from(new Set([
         ...amenities,
         ...(form.porkPolicy === "No pork served" ? ["No Pork"] : []),
@@ -373,22 +387,38 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="priceRange">Average Price / Budget *</Label>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-            <Input
-              id="priceRange"
-              type="number"
-              min="0"
-              inputMode="numeric"
-              className="pl-9 pr-16"
-              placeholder="e.g. 250"
-              value={form.priceRange}
-              onChange={e => setForm({...form, priceRange: e.target.value})}
-            />
-            <span className="absolute right-3 top-2.5 text-sm text-muted-foreground">Baht</span>
+          <Label>Price Range *</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+              <Input
+                id="priceMin"
+                type="number"
+                min="0"
+                inputMode="numeric"
+                className="pl-9 pr-16"
+                placeholder="Minimum e.g. 150"
+                value={form.priceMin}
+                onChange={e => setForm({...form, priceMin: e.target.value})}
+              />
+              <span className="absolute right-3 top-2.5 text-sm text-muted-foreground">Baht</span>
+            </div>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+              <Input
+                id="priceMax"
+                type="number"
+                min="0"
+                inputMode="numeric"
+                className="pl-9 pr-16"
+                placeholder="Maximum e.g. 450"
+                value={form.priceMax}
+                onChange={e => setForm({...form, priceMax: e.target.value})}
+              />
+              <span className="absolute right-3 top-2.5 text-sm text-muted-foreground">Baht</span>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">Enter an estimated average price or budget in Thai Baht.</p>
+          <p className="text-xs text-muted-foreground">Tourist pages show this as a range. AI Planner uses the average for budget estimation.</p>
         </div>
         <div className="space-y-3">
           <div>
@@ -605,11 +635,35 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
             <select className="w-full border rounded-md px-3 py-2 bg-background text-sm"
               value={form.certAgency} onChange={e => setForm({...form, certAgency: e.target.value})}>
               <option value="">Select certifying source</option>
-              {CERTIFYING_SOURCES.map(source => (
-                <option key={source} value={source}>{source}</option>
+              {CERTIFYING_SOURCE_RECORDS.map(source => (
+                <option key={source.id} value={source.name}>{source.name}</option>
               ))}
+              <option value="other">Other certifying source</option>
             </select>
           </div>
+          {form.certAgency === "other" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="customCertAgency">Other Certifying Source Name *</Label>
+                <Input
+                  id="customCertAgency"
+                  placeholder="Enter certifying source name"
+                  value={form.customCertAgency}
+                  onChange={e => setForm({...form, customCertAgency: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customCertLogoUrl">Logo URL / File Reference</Label>
+                <Input
+                  id="customCertLogoUrl"
+                  placeholder="Optional: paste logo URL or file reference"
+                  value={form.customCertLogoUrl}
+                  onChange={e => setForm({...form, customCertLogoUrl: e.target.value})}
+                />
+                <p className="text-xs text-muted-foreground">If no logo is provided, Tourist Search will show the source name instead.</p>
+              </div>
+            </>
+          )}
           <div className="space-y-2">
             <Label htmlFor="certNumber">Certificate Number *</Label>
             <div className="relative">
@@ -778,7 +832,7 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
         {[
           { label: 'Place Name', value: form.placeName || form.placeNameTh || form.placeNameMs || form.placeNameAr || '—' },
           { label: 'Type', value: form.placeType ? placeTypeLabel(form.placeType) : '—' },
-          { label: 'Average Price', value: form.priceRange ? `${form.priceRange} Baht` : '—' },
+          { label: 'Price Range', value: form.priceMin && form.priceMax ? formatPriceRange(form.priceMin, form.priceMax) : '—' },
           { label: 'Address', value: form.address ? `${form.address}, ${form.city}` : '—' },
           { label: 'GPS', value: form.latitude && form.longitude ? `${form.latitude}, ${form.longitude}` : '—' },
           { label: 'Hours', value: `${form.openTime} – ${form.closeTime}${form.openDaily ? ', Daily' : ''}` },
@@ -788,7 +842,8 @@ export function EntrepreneurSubmitPlace({ onNavigate, onLogout }: EntrepreneurSu
           { label: 'Amenities', value: amenities.length ? amenities.join(', ') : 'None selected' },
           { label: 'Muslim Facilities', value: muslimFacilities.length ? muslimFacilities.join(', ') : 'None selected' },
           { label: 'Certificate Type', value: form.certType || '—' },
-          { label: 'Certifying Source', value: form.certAgency || '—' },
+          { label: 'Certifying Source', value: form.certAgency === "other" ? form.customCertAgency || '—' : form.certAgency || '—' },
+          { label: 'Certifying Source Logo', value: form.customCertLogoUrl || 'Official logo / fallback name' },
           { label: 'Certificate #', value: form.certNumber || '—' },
           { label: 'Validity', value: form.issueDate && form.expiryDate ? `${form.issueDate} → ${form.expiryDate}` : '—' },
           { label: 'Certificate Doc', value: certDoc ? certDoc.name : '—' },

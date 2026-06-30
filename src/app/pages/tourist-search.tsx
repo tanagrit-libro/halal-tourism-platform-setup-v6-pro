@@ -28,7 +28,7 @@ import {
   statusToTrustStatus,
   usePrototypePlaces,
 } from "../data/prototype-place-workflow";
-import { AMENITIES, CERTIFYING_SOURCES } from "../data/prototype-options";
+import { AMENITIES, CERTIFYING_SOURCES, averagePriceForAi, formatPriceRange, getCertifyingSourceRecord } from "../data/prototype-options";
 import {
   Search,
   SlidersHorizontal,
@@ -58,6 +58,8 @@ interface Place {
   agency: string;
   source: string;
   priceRange: string;
+  priceMin?: number;
+  priceMax?: number;
   amenities: string[];
   openNow: boolean;
   porkFree: boolean;
@@ -157,6 +159,8 @@ const RAW_PLACES: Omit<Place, "image">[] = [
 
 const BASE_PLACES: Place[] = RAW_PLACES.map((p) => ({
   ...p,
+  priceMin: Math.max(0, Math.round(Number(p.priceRange) * 0.8)),
+  priceMax: Math.max(0, Math.round(Number(p.priceRange) * 1.25)),
   image: imgFor(p.category, p.name),
 }));
 
@@ -174,6 +178,8 @@ function toTouristPlace(place: PrototypePlaceRecord): Place {
     agency: place.certAgency,
     source: place.certAgency || place.source,
     priceRange: place.priceRange,
+    priceMin: place.priceMin,
+    priceMax: place.priceMax,
     amenities: place.amenities,
     openNow: true,
     porkFree: place.porkFree,
@@ -433,7 +439,7 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
       );
     if (priceRange.length > 0)
       result = result.filter((p) => {
-        const value = Number(p.priceRange);
+        const value = averagePriceForAi(p.priceMin, p.priceMax, p.priceRange);
         return Number.isFinite(value) && PRICE_RANGES.some((range) =>
           priceRange.includes(range.label) && value >= range.min && value <= range.max
         );
@@ -836,6 +842,8 @@ function PlaceCard({
   isFavorite: boolean;
   onToggleFavorite: () => void;
 }) {
+  const sourceRecord = getCertifyingSourceRecord(place.agency || place.source);
+  const priceLabel = formatPriceRange(place.priceMin, place.priceMax, place.priceRange);
   const sourceLabel =
     place.trustStatus === "certified" && place.agency
       ? `Source: ${place.agency}`
@@ -906,11 +914,16 @@ function PlaceCard({
             ({place.reviews.toLocaleString()})
           </span>
           <span className="ml-auto font-semibold text-foreground flex-shrink-0">
-            {place.priceRange} Baht
+            {priceLabel}
           </span>
         </div>
 
-        <p className="text-[10px] text-muted-foreground italic truncate">{sourceLabel}</p>
+        <div className="flex items-center gap-2 min-w-0">
+          {sourceRecord.logoUrl ? (
+            <img src={sourceRecord.logoUrl} alt={sourceRecord.shortName} className="h-6 w-6 rounded border bg-white object-contain p-0.5 shrink-0" />
+          ) : null}
+          <p className="text-[10px] text-muted-foreground italic truncate">{sourceRecord.logoUrl ? sourceRecord.shortName : sourceLabel}</p>
+        </div>
 
         {place.amenities.length > 0 && (
           <div className="flex flex-wrap gap-1">

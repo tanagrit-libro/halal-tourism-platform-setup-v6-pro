@@ -10,10 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 import {
   MessageCircle, Send, Plus, Clock, CheckCircle, FileQuestion,
-  AlertCircle, FileText, Eye, RefreshCw, Tag
+  AlertCircle, FileText, Eye, RefreshCw, Tag, Star
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { loadSupportSatisfactionRatings, saveSupportSatisfactionRating } from "../data/prototype-support-satisfaction";
 
 interface EntrepreneurSupportProps {
   onNavigate?: (page: string) => void;
@@ -127,6 +128,8 @@ export function EntrepreneurSupport({ onNavigate, onLogout }: EntrepreneurSuppor
   const [replyText, setReplyText] = useState('');
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [newTicket, setNewTicket] = useState({ subject: '', category: '' as TicketCategory | '', message: '' });
+  const [ratings, setRatings] = useState(() => loadSupportSatisfactionRatings());
+  const [ratingDraft, setRatingDraft] = useState<Record<string, { rating: number; comment: string }>>({});
 
   const activeTicket = tickets.find(t => t.id === activeTicketId) ?? null;
 
@@ -184,6 +187,22 @@ export function EntrepreneurSupport({ onNavigate, onLogout }: EntrepreneurSuppor
   };
 
   const openCount = tickets.filter(t => t.status !== 'resolved').length;
+  const submitRating = (ticketId: string) => {
+    const draft = ratingDraft[ticketId];
+    if (!draft?.rating) {
+      toast.error("Please select a rating.");
+      return;
+    }
+    saveSupportSatisfactionRating({
+      ticketId,
+      rating: draft.rating,
+      comment: draft.comment,
+      ratedBy: "Yana Ali",
+      ratedAt: new Date().toISOString().slice(0, 10),
+    });
+    setRatings(loadSupportSatisfactionRatings());
+    toast.success("Thank you for rating this support case.");
+  };
 
   return (
     <EntrepreneurLayout activePage="support" onNavigate={onNavigate} onLogout={onLogout}>
@@ -348,12 +367,50 @@ export function EntrepreneurSupport({ onNavigate, onLogout }: EntrepreneurSuppor
                       </div>
                     )}
                     {activeTicket.status === 'resolved' && (
-                      <div className="border-t p-3 text-center text-xs text-muted-foreground bg-slate-50 rounded-b-lg">
-                        <CheckCircle className="size-4 text-emerald-500 inline mr-1" /> This ticket is resolved.
-                        <button className="ml-2 text-emerald-600 hover:underline" onClick={() => {
-                          setTickets(prev => prev.map(t => t.id === activeTicket.id ? {...t, status: 'open'} : t));
-                          toast.info('Ticket reopened');
-                        }}>Reopen</button>
+                      <div className="border-t p-4 bg-slate-50 rounded-b-lg space-y-3">
+                        <div className="text-center text-xs text-muted-foreground">
+                          <CheckCircle className="size-4 text-emerald-500 inline mr-1" /> This ticket is resolved.
+                          <button className="ml-2 text-emerald-600 hover:underline" onClick={() => {
+                            setTickets(prev => prev.map(t => t.id === activeTicket.id ? {...t, status: 'open'} : t));
+                            toast.info('Ticket reopened');
+                          }}>Reopen</button>
+                        </div>
+                        {ratings.find((item) => item.ticketId === activeTicket.id) ? (
+                          <div className="rounded-lg border bg-white p-3 text-sm">
+                            <p className="font-semibold text-emerald-700">Support experience rated</p>
+                            <div className="flex items-center gap-1 mt-1 text-amber-500">
+                              {Array.from({ length: ratings.find((item) => item.ticketId === activeTicket.id)?.rating ?? 0 }).map((_, index) => (
+                                <Star key={index} className="size-4 fill-current" />
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{ratings.find((item) => item.ticketId === activeTicket.id)?.comment}</p>
+                          </div>
+                        ) : (
+                          <div className="rounded-lg border bg-white p-3 space-y-3">
+                            <div>
+                              <p className="text-sm font-semibold">Rate this support response</p>
+                              <p className="text-xs text-muted-foreground">Your rating helps the admin team improve response quality.</p>
+                            </div>
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setRatingDraft((prev) => ({ ...prev, [activeTicket.id]: { rating: star, comment: prev[activeTicket.id]?.comment ?? "" } }))}
+                                >
+                                  <Star className={`size-6 ${star <= (ratingDraft[activeTicket.id]?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} />
+                                </button>
+                              ))}
+                            </div>
+                            <Textarea
+                              rows={2}
+                              placeholder="Optional feedback for the admin team"
+                              value={ratingDraft[activeTicket.id]?.comment ?? ""}
+                              onChange={(event) => setRatingDraft((prev) => ({ ...prev, [activeTicket.id]: { rating: prev[activeTicket.id]?.rating ?? 0, comment: event.target.value } }))}
+                            />
+                            <Button size="sm" onClick={() => submitRating(activeTicket.id)}>Submit Rating</Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </Card>

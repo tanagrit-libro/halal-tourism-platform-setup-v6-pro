@@ -69,7 +69,7 @@ export const DEFAULT_CONTENT: PrototypeContentRecord[] = [
     excerpt: "Discover halal dining experiences in Thailand's capital with source notes, prayer-friendly stops, and transparent trust badges.",
     body: "Bangkok has a wide range of halal-friendly dining options for Muslim travelers, from long-standing neighborhood restaurants to hotel kitchens with documented certification.\n\nThis guide highlights places with clear source records, visible halal status, and practical travel context such as nearby prayer facilities, opening hours, and family-friendly amenities.\n\nGoSafar Thailand displays travel information from recognized agencies, partner datasets, and reviewed operator submissions. The platform does not issue halal certification. Certification decisions remain with the relevant certifying authority.",
     coverImage: "https://images.unsplash.com/photo-1600555379885-08a02224726d?w=1200",
-    author: "Content Admin (Creator)",
+    author: "Approver",
     status: "Published",
     tags: ["Bangkok", "Restaurants", "Halal food"],
     relatedPlaceIds: ["demo-1"],

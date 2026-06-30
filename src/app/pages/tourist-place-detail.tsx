@@ -13,6 +13,8 @@ import { TrustBadge } from "../components/halal-badge";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { ShareButton } from "../components/share-button";
 import { TouristAuthProps } from "../types/tourist-auth";
+import { addReviewReport } from "../data/prototype-review-reports";
+import { formatPriceRange, getCertifyingSourceRecord } from "../data/prototype-options";
 import { toast } from "sonner";
 import {
   Star,
@@ -132,13 +134,24 @@ export function TouristPlaceDetail({
     toast.success("Review submitted successfully!");
   };
 
-  const handleReportReview = () => {
+  const handleReportReview = (review: typeof mockReviews[number]) => {
     if (!isTouristLoggedIn) {
       onRequireSignIn?.();
       return;
     }
-    toast.info("Review reported. Our team will review it within 48 hours.");
+    addReviewReport({
+      reviewId: review.id,
+      placeName: "Grand Mosque Restaurant",
+      reviewerName: review.name,
+      rating: review.rating,
+      comment: review.comment,
+      reason: "Traveler reported this review for admin moderation",
+      reportedBy: "You",
+    });
+    toast.success("Review reported to Admin Content Moderation.");
   };
+
+  const cicotSource = getCertifyingSourceRecord("CICOT");
 
   return (
     <TouristLayout activePage="search" onNavigate={onNavigate} isTouristLoggedIn={isTouristLoggedIn} onTouristLogout={onTouristLogout}>
@@ -173,6 +186,9 @@ export function TouristPlaceDetail({
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Grand Mosque Restaurant</h1>
                   <TrustBadge status="certified" agency="CICOT" />
+                  {cicotSource.logoUrl && (
+                    <img src={cicotSource.logoUrl} alt="CICOT" className="h-9 w-9 rounded border bg-white object-contain p-1" />
+                  )}
                 </div>
                 <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
                   <div className="flex items-center">
@@ -245,7 +261,7 @@ export function TouristPlaceDetail({
                     </div>
                     <div className="flex items-center gap-2">
                       <DollarSign className="size-5 text-emerald-500" />
-                      <span>Affordable</span>
+                      <span>{formatPriceRange(250, 700)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -340,7 +356,10 @@ export function TouristPlaceDetail({
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Certifying Source</span>
-                          <span className="font-medium text-right">CICOT (Central Islamic Council of Thailand)</span>
+                          <span className="font-medium text-right inline-flex items-center gap-2">
+                            {cicotSource.logoUrl && <img src={cicotSource.logoUrl} alt="CICOT" className="h-7 w-7 rounded border bg-white object-contain p-0.5" />}
+                            {cicotSource.name}
+                          </span>
                         </div>
                         <Separator />
                         <div className="flex justify-between text-sm">
@@ -562,7 +581,7 @@ export function TouristPlaceDetail({
                                 variant="ghost"
                                 size="sm"
                                 className="text-muted-foreground h-7 px-2"
-                                onClick={handleReportReview}
+                                onClick={() => handleReportReview(review)}
                                 title="Report this review"
                               >
                                 <Flag className="size-3.5" />
@@ -608,7 +627,10 @@ export function TouristPlaceDetail({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Certifying Source</span>
-                <span className="text-sm font-medium">CICOT (Central Islamic Council of Thailand)</span>
+                <span className="text-sm font-medium inline-flex items-center gap-2 text-right">
+                  {cicotSource.logoUrl && <img src={cicotSource.logoUrl} alt="CICOT" className="h-6 w-6 rounded border bg-white object-contain p-0.5" />}
+                  {cicotSource.name}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Certificate No.</span>

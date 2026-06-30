@@ -42,6 +42,8 @@ export interface PrototypePlaceRecord {
   image: string;
   source: string;
   priceRange: string;
+  priceMin?: number;
+  priceMax?: number;
   amenities: string[];
   porkFree: boolean;
   alcoholFree: boolean;
@@ -90,6 +92,8 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     image: imageForPlaceType("Restaurant"),
     source: CERTIFYING_SOURCES[0],
     priceRange: "350",
+    priceMin: 250,
+    priceMax: 700,
     amenities: ["Prayer Room", "No Pork", "No Alcohol", "WiFi"],
     porkFree: true,
     alcoholFree: true,
@@ -120,6 +124,8 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     image: imageForPlaceType("Hotel"),
     source: "Owner Submitted",
     priceRange: "2500",
+    priceMin: 1500,
+    priceMax: 4200,
     amenities: ["Prayer Room", "WiFi"],
     porkFree: true,
     alcoholFree: false,
@@ -151,6 +157,8 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     image: imageForPlaceType("Mosque"),
     source: CERTIFYING_SOURCES[0],
     priceRange: "0",
+    priceMin: 0,
+    priceMax: 0,
     amenities: ["Prayer Room", "Wudu Facility", "Qibla Direction"],
     porkFree: true,
     alcoholFree: true,
@@ -181,6 +189,8 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400",
     source: CERTIFYING_SOURCES[0],
     priceRange: "600",
+    priceMin: 450,
+    priceMax: 900,
     amenities: ["No Pork", "No Alcohol", "Prayer Room"],
     porkFree: true,
     alcoholFree: true,
@@ -211,6 +221,8 @@ export const DEFAULT_PROTOTYPE_PLACES: PrototypePlaceRecord[] = [
     image: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=400",
     source: CERTIFYING_SOURCES[0],
     priceRange: "180",
+    priceMin: 120,
+    priceMax: 260,
     amenities: ["No Pork"],
     porkFree: true,
     alcoholFree: true,
@@ -236,11 +248,17 @@ export function loadPrototypePlaces(): PrototypePlaceRecord[] {
       return DEFAULT_PROTOTYPE_PLACES;
     }
     const parsed = JSON.parse(raw) as PrototypePlaceRecord[];
-    const migrated = parsed.map((place) =>
-      place.id === "demo-3" && place.name === "Chiang Mai Central Mosque"
-        ? { ...place, name: "Chiang Mai Community Prayer Hall", address: "88 Charoen Prathet" }
-        : place
-    );
+    const migrated = parsed.map((place) => {
+      const numericPrice = Number(place.priceRange);
+      const withPriceRange = {
+        ...place,
+        priceMin: place.priceMin ?? (Number.isFinite(numericPrice) ? numericPrice : 0),
+        priceMax: place.priceMax ?? (Number.isFinite(numericPrice) ? numericPrice : 0),
+      };
+      return withPriceRange.id === "demo-3" && withPriceRange.name === "Chiang Mai Central Mosque"
+        ? { ...withPriceRange, name: "Chiang Mai Community Prayer Hall", address: "88 Charoen Prathet" }
+        : withPriceRange;
+    });
     if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
     }
@@ -323,6 +341,8 @@ export function createSubmittedPlace(input: {
   certNumber: string;
   certExpiry: string;
   priceRange: string;
+  priceMin?: number;
+  priceMax?: number;
   amenities: string[];
   porkFree: boolean;
   alcoholFree: boolean;
@@ -351,6 +371,8 @@ export function createSubmittedPlace(input: {
     image: imageForPlaceType(input.type),
     source: "Owner Submitted",
     priceRange: input.priceRange,
+    priceMin: input.priceMin,
+    priceMax: input.priceMax,
     amenities: input.amenities,
     porkFree: input.porkFree,
     alcoholFree: input.alcoholFree,

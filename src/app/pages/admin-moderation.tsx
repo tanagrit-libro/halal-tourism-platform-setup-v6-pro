@@ -10,7 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import {
   Check, X, AlertCircle, Clock, FileEdit, Eye, FileSearch,
   EyeOff, Trash2, Send, AlertTriangle, RefreshCw, FileBadge,
-  Shield, Info, ChevronDown, ChevronUp,
+  Shield, Info, ChevronDown, ChevronUp, Flag, Star,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { TrustBadge, TrustStatus } from "../components/halal-badge";
@@ -24,6 +24,7 @@ import {
 } from "../data/prototype-place-workflow";
 import { addAuditEvent } from "../data/prototype-audit-workflow";
 import { CERTIFYING_SOURCES } from "../data/prototype-options";
+import { loadReviewReports, ReviewReport, updateReviewReport } from "../data/prototype-review-reports";
 
 interface AdminModerationProps {
   onNavigate?: (page: string) => void;
@@ -231,6 +232,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
   const { places: prototypePlaces, updatePlace } = usePrototypePlaces();
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [noteInput, setNoteInput] = useState<Record<string, string>>({});
+  const [reviewReports, setReviewReports] = useState<ReviewReport[]>(() => loadReviewReports());
 
   const places = useMemo(
     () => prototypePlaces.map((place) => toPlaceItem(place, expandedIds.includes(place.id))),
@@ -286,6 +288,60 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
     { key: 'approved',  label: 'Approved',          items: byStatus('Approved') },
     { key: 'rejected',  label: 'Rejected',          items: byStatus('Rejected') },
   ];
+
+  const updateReportStatus = (id: string, status: ReviewReport["status"], adminNote?: string) => {
+    updateReviewReport(id, { status, adminNote });
+    setReviewReports(loadReviewReports());
+    toast.success(`Review report marked as ${status}`);
+  };
+
+  const ReviewReportCard = ({ report }: { report: ReviewReport }) => (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">{report.id}</code>
+              <Badge variant="outline">{report.status}</Badge>
+              <Badge variant="secondary" className="gap-1"><Flag className="size-3" /> Reported review</Badge>
+            </div>
+            <h3 className="font-semibold">{report.placeName}</h3>
+            <p className="text-sm text-muted-foreground">Reported by {report.reportedBy} · {report.reportedAt}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => updateReportStatus(report.id, "In Review", "Admin opened report for moderation review.")}>
+              <Eye className="size-3.5 mr-1" /> Review
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => updateReportStatus(report.id, "Dismissed", "No policy issue found.")}>
+              <Check className="size-3.5 mr-1" /> Dismiss
+            </Button>
+            <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50" onClick={() => updateReportStatus(report.id, "Review Hidden", "Review hidden from public view after moderation.")}>
+              <EyeOff className="size-3.5 mr-1" /> Hide Review
+            </Button>
+          </div>
+        </div>
+        <div className="rounded-lg border bg-slate-50 p-3">
+          <div className="flex items-center gap-2 text-sm mb-1">
+            <span className="font-semibold">{report.reviewerName}</span>
+            <span className="inline-flex items-center gap-0.5 text-amber-500">
+              <Star className="size-3.5 fill-current" /> {report.rating}
+            </span>
+          </div>
+          <p className="text-sm text-slate-700">{report.comment}</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Report reason</p>
+            <p className="font-medium">{report.reason}</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Admin note</p>
+            <p className="font-medium">{report.adminNote || "No note yet"}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   const PlaceCard = ({ place }: { place: PlaceItem }) => {
     const cfg = STATUS_CONFIG[place.status] ?? STATUS_CONFIG['Pending'];
@@ -554,7 +610,7 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
           {tabs.map(({ key, label, items }) => (
             <Card key={key} className="text-center">
               <CardContent className="pt-4 pb-3">
@@ -568,6 +624,12 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
               </CardContent>
             </Card>
           ))}
+          <Card className="text-center border-purple-200 bg-purple-50">
+            <CardContent className="pt-4 pb-3">
+              <div className="text-xl font-bold text-purple-700">{reviewReports.filter((report) => report.status !== "Dismissed").length}</div>
+              <p className="text-xs text-muted-foreground">Reported Reviews</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Governance note */}
@@ -595,7 +657,26 @@ export function AdminModeration({ onNavigate, onLogout }: AdminModerationProps) 
                 )}
               </TabsTrigger>
             ))}
+            <TabsTrigger value="review-reports" className="text-xs sm:text-sm">
+              Reported Reviews
+              {reviewReports.length > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">{reviewReports.length}</span>
+              )}
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="review-reports" className="space-y-4 mt-6">
+            {reviewReports.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <Flag className="size-8 mx-auto mb-2 opacity-20" />
+                  <p className="text-sm">No reported reviews in the queue</p>
+                </CardContent>
+              </Card>
+            ) : (
+              reviewReports.map((report) => <ReviewReportCard key={report.id} report={report} />)
+            )}
+          </TabsContent>
 
           {tabs.map(({ key, items }) => (
             <TabsContent key={key} value={key} className="space-y-4 mt-6">

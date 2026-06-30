@@ -111,6 +111,8 @@ const MOCK_PRE_TRIP_ITINERARY: DayPlan[] = [
           "Halal-certified restaurant",
           "Close to a prayer room / mosque",
           "Fits your available time in the morning",
+          "Included because you saved similar restaurant and mosque places",
+          "Budget estimate uses the average of the displayed price range",
         ],
       },
       {
@@ -150,6 +152,7 @@ const MOCK_PRE_TRIP_ITINERARY: DayPlan[] = [
           "Adds a casual local food experience",
           "Budget-friendly dining option",
           "Convenient final stop before returning",
+          "Similar to places in your favorites list",
         ],
       },
     ],
@@ -218,6 +221,7 @@ const MOCK_CURRENT_DAY_ITINERARY: DayPlan[] = [
           "Closest suitable food stop from your current location",
           "Fits a short day plan",
           "Low travel time before the first attraction",
+          "Recommended because your saved places favor cafe and halal dining stops",
         ],
       },
       {
@@ -231,6 +235,7 @@ const MOCK_CURRENT_DAY_ITINERARY: DayPlan[] = [
           "Added near prayer time",
           "Located along the suggested route",
           "Avoids unnecessary detour",
+          "Matches prayer facilities saved or viewed in your travel profile",
         ],
       },
       {
@@ -914,6 +919,9 @@ function ItineraryView({
             <div>
               <Badge variant="secondary" className="mb-2">{activeMode === "pre-trip" ? "Pre-Trip Planner" : "Current Location Planner"}</Badge>
               <h2 className="text-2xl font-bold">{tripSummary.title}</h2>
+              <p className="text-sm text-muted-foreground mt-2">
+                Favorite places are used as a mock personalization signal. Budget estimation uses the average value from each place price range.
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-sm">
                 <SummaryItem icon={<Clock className="size-4" />} label="Duration" value={tripSummary.duration} />
                 <SummaryItem icon={<Calendar className="size-4" />} label="Dates" value={tripSummary.dates} />

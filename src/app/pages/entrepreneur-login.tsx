@@ -71,6 +71,9 @@ export function EntrepreneurLogin({ onLogin, onNavigateToRegister }: Entrepreneu
         <CardContent>
           {step === 'credentials' ? (
             <form className="space-y-4" onSubmit={handleCredentialsSubmit}>
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                <strong>Single active session policy:</strong> each business account can keep only one active login session at a time. A new login will replace the previous session in production.
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="login-email">Email</Label>
                 <div className="relative">

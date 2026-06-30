@@ -103,6 +103,9 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           {step === 'login' ? (
             /* Login Form (Requirement 2.1) */
             <form className="space-y-4" onSubmit={handleLoginSubmit}>
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                <strong>Single active session policy:</strong> signing in on this device will lock this admin account to one active session and revoke older admin sessions in the production design.
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">

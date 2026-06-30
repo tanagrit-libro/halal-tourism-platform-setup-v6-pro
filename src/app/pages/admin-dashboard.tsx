@@ -5,7 +5,7 @@ import { Badge } from "../components/ui/badge";
 import {
   CheckCircle2, Clock, RotateCcw, AlertTriangle, XCircle, EyeOff,
   Inbox, FileText, ArrowUpRight, Activity, Users, RefreshCw,
-  ChevronRight, CalendarDays, Upload
+  ChevronRight, CalendarDays, Upload, Star
 } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { Progress } from "../components/ui/progress";
 import { useLanguage } from "../context/LanguageContext";
+import { getSupportSatisfactionSummary } from "../data/prototype-support-satisfaction";
 
 interface AdminDashboardProps {
   onNavigate?: (page: string) => void;
@@ -82,6 +83,7 @@ const urgencyBadge: Record<string, string> = {
 
 export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
   const { t } = useLanguage();
+  const satisfaction = getSupportSatisfactionSummary();
 
   return (
     <AdminLayout activePage="dashboard" onNavigate={onNavigate} onLogout={onLogout}>
@@ -100,6 +102,24 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
             </Button>
           </div>
         </div>
+
+        <Card className="border-emerald-200 bg-emerald-50">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-lg bg-white border flex items-center justify-center text-emerald-700">
+                <Star className="size-5 fill-current" />
+              </div>
+              <div>
+                <p className="font-semibold">Support Satisfaction</p>
+                <p className="text-sm text-muted-foreground">Average rating from resolved Entrepreneur Support tickets.</p>
+              </div>
+            </div>
+            <div className="text-left sm:text-right">
+              <p className="text-2xl font-bold text-emerald-700">{satisfaction.average.toFixed(1)} / 5</p>
+              <p className="text-xs text-muted-foreground">{satisfaction.ratedTickets} rated tickets</p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Listing Status Summary — 7 cards */}
         <div>

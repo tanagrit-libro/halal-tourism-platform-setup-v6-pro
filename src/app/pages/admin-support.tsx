@@ -22,6 +22,7 @@ import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Textarea } from "../components/ui/textarea";
+import { getSupportSatisfactionSummary } from "../data/prototype-support-satisfaction";
 
 interface AdminSupportProps {
   onNavigate?: (page: string) => void;
@@ -167,6 +168,7 @@ export function AdminSupport({ onNavigate, onLogout }: AdminSupportProps) {
   const activeTicket = tickets.find((ticket) => ticket.id === activeTicketId) ?? filteredTickets[0] ?? null;
   const waitingAdmin = tickets.filter((ticket) => ticket.status === "waiting_admin" || ticket.status === "open").length;
   const openCases = tickets.filter((ticket) => ticket.status !== "resolved").length;
+  const satisfaction = getSupportSatisfactionSummary();
 
   const handleReply = () => {
     if (!activeTicket || !replyText.trim()) return;
@@ -213,7 +215,7 @@ export function AdminSupport({ onNavigate, onLogout }: AdminSupportProps) {
           <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Open Cases</p><p className="text-2xl font-bold">{openCases}</p></CardContent></Card>
           <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Need Admin Reply</p><p className="text-2xl font-bold text-amber-600">{waitingAdmin}</p></CardContent></Card>
           <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">High Priority</p><p className="text-2xl font-bold text-rose-600">{tickets.filter((t) => t.priority === "High" && t.status !== "resolved").length}</p></CardContent></Card>
-          <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Resolved</p><p className="text-2xl font-bold text-emerald-600">{tickets.filter((t) => t.status === "resolved").length}</p></CardContent></Card>
+          <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Avg. Satisfaction</p><p className="text-2xl font-bold text-emerald-600">{satisfaction.average.toFixed(1)} / 5</p><p className="text-xs text-muted-foreground">{satisfaction.ratedTickets} rated tickets</p></CardContent></Card>
         </div>
 
         <Tabs defaultValue="tickets" className="space-y-4">

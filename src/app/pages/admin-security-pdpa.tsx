@@ -27,6 +27,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CONSENT_CATEGORIES } from "../data/prototype-options";
 
 interface AdminSecurityPDPAProps {
   onNavigate?: (page: string) => void;
@@ -41,13 +42,8 @@ const ROLE_ROWS = [
   },
   {
     role: "Approver",
-    scope: "Review entrepreneur submissions, certification documents, contact data, and publish status.",
+    scope: "Review entrepreneur submissions, content workflow, certification documents, contact data, and publish status.",
     sensitive: "Business contact and certificate documents only",
-  },
-  {
-    role: "Content Admin (Creator)",
-    scope: "Manage content, article workflow, content moderation, and public communication.",
-    sensitive: "No certificate document access",
   },
   {
     role: "Data Reviewer",
@@ -343,6 +339,18 @@ export function AdminSecurityPDPA({ onNavigate, onLogout }: AdminSecurityPDPAPro
                   <p>
                     PDPA requests should be logged with requester identity, lawful basis, affected data scope, decision reason, completion date, and audit evidence.
                   </p>
+                </div>
+
+                <div className="mt-4 rounded-lg border p-4">
+                  <p className="font-semibold text-sm mb-3">Consent Categories for PDPC / สคส Review</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {CONSENT_CATEGORIES.map((category) => (
+                      <div key={category.id} className="rounded-lg border bg-slate-50 p-3">
+                        <p className="text-sm font-medium">{category.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{category.purpose}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
