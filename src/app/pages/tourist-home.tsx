@@ -291,6 +291,26 @@ export function TouristHome({ onNavigate, isTouristLoggedIn, onTouristLogout, on
     },
   ];
 
+  const openFeaturedPlace = (place: typeof featuredPlaces[number]) => {
+    const province = place.location.split(",")[0]?.trim() || place.location;
+    sessionStorage.setItem("tourist-selected-place", JSON.stringify({
+      ...place,
+      province,
+      source: place.source || place.agency,
+      openNow: true,
+      priceRange: place.category === "Attraction" ? "500" : place.category === "Hotel" ? "6500" : "350",
+      amenities:
+        place.category === "Hotel"
+          ? ["Prayer Room", "WiFi", "Family Section"]
+          : place.category === "Attraction"
+          ? ["Family Section", "Parking"]
+          : place.category === "Cafe"
+          ? ["WiFi", "No Pork"]
+          : ["Prayer Room", "No Pork", "WiFi"],
+    }));
+    onNavigate?.("place-detail");
+  };
+
   return (
     <TouristLayout activePage="home" onNavigate={onNavigate} isTouristLoggedIn={isTouristLoggedIn} onTouristLogout={onTouristLogout}>
       {/* Hero Section — image + text in overflow-hidden, search bar sits outside */}
@@ -395,7 +415,7 @@ export function TouristHome({ onNavigate, isTouristLoggedIn, onTouristLogout, on
                 }
                 toast.success(`${place.name} saved to favorites`);
               }}
-              onClick={() => onNavigate?.('place-detail')}
+              onClick={() => openFeaturedPlace(place)}
             />
           ))}
         </div>

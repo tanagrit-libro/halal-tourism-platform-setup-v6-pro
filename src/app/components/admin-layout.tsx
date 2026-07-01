@@ -96,11 +96,11 @@ export function AdminLayout({
     { id: 'moderation',  label: 'Content Moderation', icon: FileText },
     { id: 'support',     label: 'Support Center', icon: MessageCircle },
     { id: 'users',       label: t('nav.users'),     icon: Users,     hidden: !perms.manageUsers },
-    { id: 'master-data', label: t('nav.masterData'),icon: Database },
+    { id: 'master-data', label: t('nav.masterData'),icon: Database,  hidden: role !== 'Super Admin' },
     { id: 'reports',     label: t('nav.reports'),   icon: BarChart3 },
     { id: 'api-keys',    label: t('nav.apiKeys'),   icon: Key,       hidden: !perms.manageApiKeys },
     { id: 'security-pdpa', label: 'Security & PDPA', icon: LockKeyhole, hidden: true },
-    { id: 'audit-log',   label: t('nav.audit'),     icon: FileSearch },
+    { id: 'audit-log',   label: t('nav.audit'),     icon: FileSearch, hidden: role !== 'Super Admin' },
     { id: 'prayer',      label: t('nav.prayer'),    icon: Compass },
   ].filter(i => !i.hidden);
 
