@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { TrustBadge, TrustStatus } from "../components/halal-badge";
+import { CertifyingSourceLogoBadge, TrustStatus } from "../components/halal-badge";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { useLanguage } from "../context/LanguageContext";
 import { PLACE_TYPE_LABELS } from "../data/place-types";
@@ -864,13 +864,13 @@ function PlaceCard({
           alt={place.name}
           className="w-full h-full object-cover"
         />
-        {/* Trust badge — top-left */}
-        <div className="absolute top-2 left-2 max-w-[calc(100%-3.5rem)]">
-          <TrustBadge
+        {/* Certifying source logo — top-left */}
+        <div className="absolute top-2 left-2">
+          <CertifyingSourceLogoBadge
             status={place.trustStatus}
             agency={place.agency || undefined}
             source={place.source || undefined}
-            size="sm"
+            size="md"
           />
         </div>
         {/* Favorite — top-right */}
@@ -920,9 +920,20 @@ function PlaceCard({
 
         <div className="flex items-center gap-2 min-w-0">
           {sourceRecord.logoUrl ? (
-            <img src={sourceRecord.logoUrl} alt={sourceRecord.shortName} className="h-6 w-6 rounded border bg-white object-contain p-0.5 shrink-0" />
+            <img
+              src={sourceRecord.logoUrl}
+              alt={sourceRecord.shortName}
+              className="h-[54px] w-[54px] rounded-lg border bg-white object-contain p-1.5 shrink-0 shadow-sm"
+            />
           ) : null}
-          <p className="text-[10px] text-muted-foreground italic truncate">{sourceRecord.logoUrl ? sourceRecord.shortName : sourceLabel}</p>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-slate-700 truncate">
+              {sourceRecord.logoUrl ? sourceRecord.shortName : sourceLabel}
+            </p>
+            <p className="text-[10px] text-muted-foreground truncate">
+              Certifying source
+            </p>
+          </div>
         </div>
 
         {place.amenities.length > 0 && (

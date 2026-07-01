@@ -1,5 +1,6 @@
 import { Badge } from "./ui/badge";
 import { CheckCircle2, ShieldCheck, Clock, AlertTriangle, FileQuestion } from "lucide-react";
+import { getCertifyingSourceRecord } from "../data/prototype-options";
 
 export type TrustStatus =
   | 'certified'
@@ -74,6 +75,52 @@ export function TrustBadge({ status, agency, source, expiryDate, size = 'md', cl
       <Icon className={iconSize} />
       {label}
     </Badge>
+  );
+}
+
+export function CertifyingSourceLogoBadge({
+  status,
+  agency,
+  source,
+  size = 'md',
+  className = '',
+}: Pick<TrustBadgeProps, 'status' | 'agency' | 'source' | 'size' | 'className'>) {
+  const sourceName = status === 'certified' ? agency : source || agency;
+  const record = getCertifyingSourceRecord(sourceName || '');
+  const fallbackLabel = status === 'pending'
+    ? 'Pending'
+    : status === 'owner-submitted'
+    ? 'Owner'
+    : record.shortName;
+
+  const boxSize = {
+    sm: 'h-[42px] w-[42px]',
+    md: 'h-[60px] w-[60px]',
+    lg: 'h-[72px] w-[72px]',
+  };
+
+  if (record.logoUrl) {
+    return (
+      <div
+        className={`rounded-xl border border-white/70 bg-white/95 shadow-lg backdrop-blur-sm p-1.5 flex items-center justify-center ${boxSize[size]} ${className}`}
+        title={record.name}
+      >
+        <img
+          src={record.logoUrl}
+          alt={record.shortName}
+          className="h-full w-full object-contain"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`rounded-xl border border-white/70 bg-white/95 shadow-lg backdrop-blur-sm px-2 flex items-center justify-center text-center text-[10px] font-semibold leading-tight text-slate-700 ${boxSize[size]} ${className}`}
+      title={sourceName || fallbackLabel}
+    >
+      {fallbackLabel}
+    </div>
   );
 }
 

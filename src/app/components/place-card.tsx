@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { TrustBadge, TrustStatus } from "./halal-badge";
+import { CertifyingSourceLogoBadge, TrustStatus } from "./halal-badge";
 import { MapPin, Star, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
@@ -52,7 +52,7 @@ export function PlaceCard({
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3">
-          <TrustBadge status={resolvedStatus} agency={agency} source={source} expiryDate={expiryDate} size="sm" />
+          <CertifyingSourceLogoBadge status={resolvedStatus} agency={agency} source={source} size="lg" />
         </div>
         <Button
           variant="ghost"
