@@ -9,7 +9,7 @@ import { Separator } from "../components/ui/separator";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
-import { TrustBadge } from "../components/halal-badge";
+import { TrustBadge, TrustStatus } from "../components/halal-badge";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { ShareButton } from "../components/share-button";
 import { TouristAuthProps } from "../types/tourist-auth";
@@ -46,6 +46,34 @@ import {
 
 interface TouristPlaceDetailProps extends TouristAuthProps {
   onNavigate?: (page: string) => void;
+}
+
+interface SelectedPlaceDetail {
+  name: string;
+  category: string;
+  province: string;
+  location: string;
+  rating: number;
+  reviews: number;
+  image: string;
+  trustStatus: TrustStatus;
+  agency?: string;
+  source?: string;
+  priceRange?: string;
+  priceMin?: number;
+  priceMax?: number;
+  amenities?: string[];
+  openNow?: boolean;
+}
+
+function loadSelectedPlaceDetail(): SelectedPlaceDetail | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem("tourist-selected-place");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 const mockReviews = [
@@ -101,6 +129,22 @@ export function TouristPlaceDetail({
   const [isFavorite, setIsFavorite] = useState(false);
   const [reviews, setReviews] = useState(mockReviews);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const selectedPlace = loadSelectedPlaceDetail();
+  const detailName = selectedPlace?.name ?? "Grand Mosque Restaurant";
+  const detailCategory = selectedPlace?.category ?? "Restaurant";
+  const detailLocation = selectedPlace?.location ?? "Bangkok, Thailand";
+  const detailProvince = selectedPlace?.province ?? "Bangkok";
+  const detailRating = selectedPlace?.rating ?? 4.8;
+  const detailReviewCount = selectedPlace?.reviews ?? reviews.length;
+  const detailImage = selectedPlace?.image ?? images[0];
+  const detailTrustStatus = selectedPlace?.trustStatus ?? "certified";
+  const detailAgency = selectedPlace?.agency || selectedPlace?.source || "CICOT";
+  const detailSource = selectedPlace?.source || detailAgency;
+  const detailSourceRecord = getCertifyingSourceRecord(detailAgency);
+  const detailAmenities = selectedPlace?.amenities?.length
+    ? selectedPlace.amenities
+    : ["Halal-Friendly Menu", "Prayer Room", "Free WiFi", "Parking", "Family Room"];
+  const detailPrice = formatPriceRange(selectedPlace?.priceMin, selectedPlace?.priceMax, selectedPlace?.priceRange ?? "250-700");
 
   const toggleFavorite = () => {
     if (!isTouristLoggedIn) {
@@ -141,7 +185,7 @@ export function TouristPlaceDetail({
     }
     addReviewReport({
       reviewId: review.id,
-      placeName: "Grand Mosque Restaurant",
+      placeName: detailName,
       reviewerName: review.name,
       rating: review.rating,
       comment: review.comment,
@@ -150,8 +194,6 @@ export function TouristPlaceDetail({
     });
     toast.success("Review reported to Admin Content Moderation.");
   };
-
-  const cicotSource = getCertifyingSourceRecord("CICOT");
 
   return (
     <TouristLayout activePage="search" onNavigate={onNavigate} isTouristLoggedIn={isTouristLoggedIn} onTouristLogout={onTouristLogout}>
@@ -165,7 +207,7 @@ export function TouristPlaceDetail({
           {/* Image Gallery */}
           <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
             <ImageWithFallback
-              src={images[0]}
+              src={detailImage}
               alt="Main"
               className="col-span-2 w-full h-[220px] sm:h-[320px] lg:h-[400px] object-cover"
             />
@@ -184,21 +226,21 @@ export function TouristPlaceDetail({
             <div className={`flex items-start justify-between mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
               <div>
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Grand Mosque Restaurant</h1>
-                  <TrustBadge status="certified" agency="CICOT" />
-                  {cicotSource.logoUrl && (
-                    <img src={cicotSource.logoUrl} alt="CICOT" className="h-9 w-9 rounded border bg-white object-contain p-1" />
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{detailName}</h1>
+                  <TrustBadge status={detailTrustStatus} agency={detailAgency} source={detailSource} />
+                  {detailSourceRecord.logoUrl && (
+                    <img src={detailSourceRecord.logoUrl} alt={detailSourceRecord.shortName} className="h-9 w-9 rounded border bg-white object-contain p-1" />
                   )}
                 </div>
                 <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
                   <div className="flex items-center">
                     <Star className="size-5 fill-yellow-400 text-yellow-400 me-1" />
-                    <span className="font-semibold text-foreground">4.8</span>
-                    <span className="ms-1">({reviews.length} reviews)</span>
+                    <span className="font-semibold text-foreground">{detailRating.toFixed(1)}</span>
+                    <span className="ms-1">({detailReviewCount.toLocaleString()} reviews)</span>
                   </div>
                   <div className="flex items-center">
                     <MapPin className="size-4 me-1" />
-                    <span>Bangkok, Thailand</span>
+                    <span>{detailProvince}, Thailand</span>
                   </div>
                 </div>
               </div>
@@ -211,14 +253,14 @@ export function TouristPlaceDetail({
                 >
                   <Heart className={`size-5 ${isFavorite ? "fill-current" : ""}`} />
                 </Button>
-                <ShareButton title="Grand Mosque Restaurant" />
+                <ShareButton title={detailName} />
               </div>
             </div>
 
             <p className="text-muted-foreground">
-              Experience authentic Thai cuisine prepared according to halal standards. Our restaurant
-              offers a wide variety of traditional dishes in a family-friendly environment with
-              dedicated prayer facilities.
+              {detailName} is listed as a {detailCategory.toLowerCase()} in {detailLocation}. This
+              page summarizes available travel information, source record, amenities, and review
+              signals for traveler decision support.
             </p>
           </div>
 
@@ -239,29 +281,18 @@ export function TouristPlaceDetail({
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="flex items-center gap-2">
-                      <Utensils className="size-5 text-emerald-500" />
-                      <span>Halal-Friendly Menu</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="size-5 text-emerald-500" />
-                      <span>Prayer Room</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Wifi className="size-5 text-emerald-500" />
-                      <span>Free WiFi</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ParkingCircle className="size-5 text-emerald-500" />
-                      <span>Parking</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <User className="size-5 text-emerald-500" />
-                      <span>Family Room</span>
-                    </div>
+                    {detailAmenities.slice(0, 5).map((amenity, index) => {
+                      const AmenityIcon = [Utensils, MapPin, Wifi, ParkingCircle, User][index] ?? CheckCircle2;
+                      return (
+                        <div key={amenity} className="flex items-center gap-2">
+                          <AmenityIcon className="size-5 text-emerald-500" />
+                          <span>{amenity}</span>
+                        </div>
+                      );
+                    })}
                     <div className="flex items-center gap-2">
                       <DollarSign className="size-5 text-emerald-500" />
-                      <span>{formatPriceRange(250, 700)}</span>
+                      <span>{detailPrice}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -317,7 +348,7 @@ export function TouristPlaceDetail({
                         <Separator />
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Data Provider</span>
-                          <span className="font-medium">CICOT (Central Islamic Council of Thailand)</span>
+                          <span className="font-medium">{detailSourceRecord.name}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between text-sm">
@@ -357,8 +388,8 @@ export function TouristPlaceDetail({
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Certifying Source</span>
                           <span className="font-medium text-right inline-flex items-center gap-2">
-                            {cicotSource.logoUrl && <img src={cicotSource.logoUrl} alt="CICOT" className="h-7 w-7 rounded border bg-white object-contain p-0.5" />}
-                            {cicotSource.name}
+                            {detailSourceRecord.logoUrl && <img src={detailSourceRecord.logoUrl} alt={detailSourceRecord.shortName} className="h-7 w-7 rounded border bg-white object-contain p-0.5" />}
+                            {detailSourceRecord.name}
                           </span>
                         </div>
                         <Separator />
@@ -385,7 +416,7 @@ export function TouristPlaceDetail({
                         <Separator />
                         <div className="flex justify-between text-sm items-center">
                           <span className="text-muted-foreground">Certificate Status</span>
-                          <TrustBadge status="expired" size="sm" />
+                          <TrustBadge status={detailTrustStatus} agency={detailAgency} source={detailSource} size="sm" />
                         </div>
                         <Separator />
                         <div className="text-sm">
@@ -415,7 +446,7 @@ export function TouristPlaceDetail({
                     className="inline-flex items-center gap-1 text-sm text-emerald-700 hover:text-emerald-800 hover:underline font-medium"
                   >
                     <FileText className="size-4" />
-                    View official CICOT certification register
+                    View official {detailSourceRecord.shortName} source record
                     <ExternalLink className="size-3" />
                   </a>
 
@@ -623,13 +654,13 @@ export function TouristPlaceDetail({
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Status</span>
-                <TrustBadge status="expired" size="sm" />
+                <TrustBadge status={detailTrustStatus} agency={detailAgency} source={detailSource} size="sm" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Certifying Source</span>
                 <span className="text-sm font-medium inline-flex items-center gap-2 text-right">
-                  {cicotSource.logoUrl && <img src={cicotSource.logoUrl} alt="CICOT" className="h-6 w-6 rounded border bg-white object-contain p-0.5" />}
-                  {cicotSource.name}
+                  {detailSourceRecord.logoUrl && <img src={detailSourceRecord.logoUrl} alt={detailSourceRecord.shortName} className="h-6 w-6 rounded border bg-white object-contain p-0.5" />}
+                  {detailSourceRecord.name}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -678,14 +709,14 @@ export function TouristPlaceDetail({
                 <MapPin className="size-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Address</p>
-                  <p className="font-medium">123 Sukhumvit Rd, Bangkok</p>
+                  <p className="font-medium">{detailLocation}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Clock className="size-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
-                  <p className="font-medium text-emerald-600">Open Now</p>
+                  <p className="font-medium text-emerald-600">{selectedPlace?.openNow === false ? "Closed" : "Open Now"}</p>
                 </div>
               </div>
             </CardContent>

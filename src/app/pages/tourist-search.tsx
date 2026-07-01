@@ -821,6 +821,11 @@ export function TouristSearch({ onNavigate, isTouristLoggedIn, onTouristLogout, 
                   place={place}
                   isFavorite={favorites.includes(place.id)}
                   onToggleFavorite={() => toggleFavorite(place.id, place.name)}
+                  onViewDetails={() => {
+                    sessionStorage.setItem("tourist-selected-place", JSON.stringify(place));
+                    toast.info(`Opening details for ${place.name}`);
+                    onNavigate?.("place-detail");
+                  }}
                 />
               ))}
             </div>
@@ -837,10 +842,12 @@ function PlaceCard({
   place,
   isFavorite,
   onToggleFavorite,
+  onViewDetails,
 }: {
   place: Place;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  onViewDetails: () => void;
 }) {
   const sourceRecord = getCertifyingSourceRecord(place.agency || place.source);
   const priceLabel = formatPriceRange(place.priceMin, place.priceMax, place.priceRange);
@@ -956,7 +963,7 @@ function PlaceCard({
             size="sm"
             variant="outline"
             className="w-full text-xs"
-            onClick={() => toast.info(`Viewing ${place.name}`)}
+            onClick={onViewDetails}
           >
             View Details
           </Button>
